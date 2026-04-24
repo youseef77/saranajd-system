@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سرا نجد - نظام إدارة المصاعد</title>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+<style>
+:root{--bg:#0f1117;--bg2:#161b27;--bg3:#1e2535;--bg4:#252d40;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#e8eaf0;--text2:#8892a4;--text3:#5a6478;--accent:#3b82f6;--red:#ef4444;--red-bg:rgba(239,68,68,0.12);--amber:#f59e0b;--amber-bg:rgba(245,158,11,0.12);--green:#10b981;--green-bg:rgba(16,185,129,0.12);--blue-bg:rgba(59,130,246,0.12);--purple:#8b5cf6;--purple-bg:rgba(139,92,246,0.12);--r:10px;--rs:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:230px;min-width:230px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;transition:width .2s;overflow:hidden}
+.sidebar.collapsed{width:60px}
+.sidebar.collapsed .hide-col{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding:9px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.logo{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-icon{width:38px;height:38px;min-width:38px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-sec{padding:8px 6px 2px}
+.nav-lbl{font-size:10px;color:var(--text3);padding:0 8px 4px;text-transform:uppercase;letter-spacing:.08em}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;margin-bottom:2px;white-space:nowrap}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--blue-bg);color:var(--accent);font-weight:500}
+.nav-item.active.red-nav{background:var(--red-bg);color:var(--red)}
+.nav-item.active.orange-nav{background:rgba(249,115,22,.12);color:#f97316}
+.nav-icon{font-size:20px;min-width:24px;text-align:center;display:flex;align-items:center;justify-content:center}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:10px}
+.page-title{font-size:15px;font-weight:600}
+.page-sub{font-size:11px;color:var(--text3);margin-top:1px}
+/* Shared search bar style used inside pages */
+.pg-search-wrap{position:relative;margin-bottom:14px}
+.pg-search-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 36px 8px 12px;font-size:13px;color:var(--text);width:100%;max-width:340px;font-family:inherit;outline:none;transition:border .2s}
+.pg-search-input:focus{border-color:var(--accent)}
+.pg-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none}
+.search-wrap{position:relative}
+.search-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 34px 7px 12px;font-size:13px;color:var(--text);width:200px;font-family:inherit;outline:none;transition:border .2s}
+.search-input:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;pointer-events:none}
+.icon-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 10px;color:var(--text2);cursor:pointer;font-size:13px;transition:all .15s}
+.icon-btn:hover{color:var(--text);background:var(--bg4)}
+.content{padding:16px;flex:1;overflow:auto}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;transition:border-color .2s}
+.stat:hover{border-color:var(--border2)}
+.stat-lbl{font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.stat-val{font-size:24px;font-weight:600;line-height:1}
+.stat-sub{font-size:10px;color:var(--text3);margin-top:4px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.card-hdr{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.card-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.fsel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:5px 9px;font-size:12px;color:var(--text);font-family:inherit;cursor:pointer;outline:none}
+.fsel:focus{border-color:var(--accent)}
+.tw{overflow:auto;max-height:420px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;color:var(--text3);text-align:right;border-bottom:1px solid var(--border);font-weight:400;background:var(--bg3);position:sticky;top:0;z-index:1;white-space:nowrap;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.tbl td{padding:10px 12px;color:var(--text);border-bottom:1px solid var(--border);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg3);cursor:pointer}
+.tbl tr.row-red td{background:rgba(239,68,68,.04)}
+.tbl tr.row-red:hover td{background:rgba(239,68,68,.09)}
+.tbl tr.row-red td:first-child{border-right:2px solid var(--red)}
+.b{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap}
+.b-blue{background:var(--blue-bg);color:var(--accent)}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-purple{background:var(--purple-bg);color:var(--purple)}
+.b-gray{background:var(--bg4);color:var(--text2)}
+.b-orange{background:rgba(249,115,22,.12);color:#f97316}
+.pager{display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--text3);justify-content:flex-end}
+.pgr-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:5px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit}
+.pgr-btn:hover{background:var(--bg4);color:var(--text)}
+.pgr-btn:disabled{opacity:.4;cursor:not-allowed}
+.panel{position:fixed;top:0;left:0;width:380px;height:100%;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;z-index:200;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.panel.open{transform:translateX(0)}
+.panel-hdr{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:10}
+.panel-title{font-size:14px;font-weight:600}
+.close-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:5px 9px;color:var(--text3);cursor:pointer;font-size:13px}
+.close-btn:hover{color:var(--text)}
+.panel-sec{padding:12px 16px;border-bottom:1px solid var(--border)}
+.sec-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:500}
+.ir{display:flex;justify-content:space-between;align-items:flex-start;padding:4px 0;font-size:12px;gap:8px}
+.il{color:var(--text3);flex-shrink:0}
+.iv{color:var(--text);font-weight:500;text-align:left;word-break:break-word}
+.note-box{background:var(--bg3);border-radius:var(--rs);padding:9px 11px;font-size:12px;color:var(--text2);margin-top:7px;line-height:1.6;border-right:2px solid var(--red)}
+.month-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:7px}
+.md{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500}
+.md-done{background:var(--green-bg);color:var(--green)}
+.md-cur{background:var(--blue-bg);color:var(--accent)}
+.md-pend{background:var(--bg4);color:var(--text3)}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;display:none}
+.ovl.show{display:block}
+.pg{display:none;flex:1;overflow:hidden;flex-direction:column}
+.pg.active{display:flex;flex-direction:column}
+.pg .content{flex:1;overflow:auto}
+/* Reports */
+.rpt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.rpt-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.rpt-full{margin-bottom:14px}
+.prog-bar{background:var(--bg4);border-radius:3px;height:6px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .4s ease}
+.rpt-kpi{background:var(--bg3);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border)}
+.rpt-kpi-val{font-size:26px;font-weight:600;line-height:1;margin-bottom:4px}
+.rpt-kpi-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.rpt-kpi-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.rpt-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;gap:8px}
+.rpt-row:last-child{border-bottom:none}
+.sb-footer{margin-top:auto;padding:11px 10px;border-top:1px solid var(--border)}
+.user-box{display:flex;align-items:center;gap:9px}
+.user-av{width:32px;height:32px;min-width:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff}
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:#25d366;color:#fff;border:none;border-radius:var(--rs);font-size:13px;cursor:pointer;width:100%;font-family:inherit;font-weight:500;margin-bottom:7px}
+.wa-btn:hover{background:#1ebe5d}
+.act-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;background:var(--blue-bg);color:var(--accent);border:1px solid rgba(59,130,246,.2);border-radius:var(--rs);font-size:13px;cursor:pointer;width:100%;font-family:inherit;font-weight:500;margin-bottom:7px}
+.act-btn:hover{background:rgba(59,130,246,.2)}
+.admin-bar{background:linear-gradient(90deg,#1a1033,#0d1f3c);border-bottom:1px solid var(--border);padding:7px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.admin-badge{font-size:11px;font-weight:600;color:var(--amber);display:flex;align-items:center;gap:6px}
+.admin-btn{padding:6px 13px;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s}
+.btn-save{background:var(--accent);color:#fff;border:none}
+.btn-save:hover{opacity:.85}
+.btn-add{background:var(--green-bg);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+.btn-cancel{background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
+.ef{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.el{font-size:11px;color:var(--text3)}
+.ei{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 10px;font-size:13px;color:var(--text);font-family:inherit;outline:none;transition:border .2s;width:100%}
+.ei:focus{border-color:var(--accent)}
+.es{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 10px;font-size:13px;color:var(--text);font-family:inherit;outline:none;width:100%;cursor:pointer}
+.login-wrap{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:32px;width:340px}
+.login-li{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;outline:none;width:100%;margin-bottom:12px;display:block}
+.login-li:focus{border-color:var(--accent)}
+.login-btn{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.login-btn:hover{opacity:.85}
+.modal-ovl{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:none;align-items:center;justify-content:center}
+.modal-ovl.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:22px;width:520px;max-width:96vw;max-height:92vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:16px}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;border-top:1px solid var(--border);padding-top:13px}
+.install-stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.install-stat-lbl{font-size:10px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.install-stat-val{font-size:22px;font-weight:600}
+.install-stat-sub{font-size:10px;color:var(--text3);margin-top:3px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 18px;font-size:13px;color:var(--text);z-index:600;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.success{border-color:rgba(16,185,129,.3);color:var(--green)}
+.toast.error{border-color:rgba(239,68,68,.3);color:var(--red)}
+/* Visit Groups */
+.visit-day-group{margin-bottom:20px}
+.vdg-header{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:var(--rs);margin-bottom:8px;border:1px solid var(--border)}
+.vdg-day-num{font-size:28px;font-weight:600;line-height:1;min-width:36px;text-align:center}
+.vdg-day-info{flex:1}
+.vdg-day-name{font-size:13px;font-weight:600}
+.vdg-day-date{font-size:11px;color:var(--text3);margin-top:2px}
+.vdg-count{background:var(--bg4);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--text2)}
+.vdg-overdue{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06)}
+.vdg-overdue .vdg-day-num{color:var(--red)}
+.vdg-soon{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)}
+.vdg-soon .vdg-day-num{color:var(--amber)}
+.vdg-table{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden}
+.next-date-preview{font-size:11px;color:var(--accent);margin-top:4px;min-height:16px;font-weight:500}
+@media(max-width:768px){
+  .sidebar{position:fixed;right:0;top:0;height:100%;z-index:300;transform:translateX(100%);transition:transform .25s}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .sidebar.collapsed{width:230px}
+  .sidebar.collapsed .hide-col{display:flex}
+  .sidebar.collapsed .nav-item{justify-content:flex-start;padding:8px 10px}
+  .stats{grid-template-columns:1fr 1fr}
+  .rpt-grid,.rpt-grid-3{grid-template-columns:1fr}
+  .search-input{width:140px}
+  .panel{width:100%}
+  .modal{width:96vw}
+  .modal-grid{grid-template-columns:1fr}
+}
+
+body.light-mode {
+  --bg: #faf8f5; /* Soft beige background */
+  --bg2: #ffffff; /* Solid white for cards/panels */
+  --bg3: #f3efe9; /* Slightly darker beige for hover/inputs */
+  --bg4: #e8e2d9; /* Borders/secondary elements */
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+  --text: #2d3748; /* Softer dark text instead of harsh black */
+  --text2: #4a5568;
+  --text3: #718096;
+  --red-bg: rgba(239,68,68,0.12);
+  --amber-bg: rgba(245,158,11,0.15);
+  --green-bg: rgba(16,185,129,0.12);
+  --blue-bg: rgba(59,130,246,0.12);
+  --purple-bg: rgba(139,92,246,0.12);
+}
+body.light-mode::before {
+   background: rgba(250, 248, 245, 0.85); /* Solid warm tint over spline */
+}
+/* Solid, non-transparent backgrounds for the Light Mode */
+body.light-mode .sidebar, body.light-mode .topbar, body.light-mode .panel, body.light-mode .login-box, body.light-mode .modal {
+  background: #ffffff !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-color: rgba(0,0,0,0.06) !important;
+}
+body.light-mode .card, body.light-mode .stat, body.light-mode .install-stat {
+  background: #ffffff !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-color: rgba(0,0,0,0.05) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+body.light-mode .tbl th {
+  background: #f7f5f0 !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+body.light-mode .admin-bar {
+  background: #f3efe9 !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box" style="position:relative">
+    <button onclick="toggleTheme()" title="تغيير المظهر" id="theme-btn-login" style="position:absolute;top:16px;left:16px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:20px;cursor:pointer;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all 0.2s">
+      <i class="ph-duotone ph-sun"></i>
+    </button>
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="width:120px;height:120px;margin:0 auto 10px">
+        <img src="https://i.ibb.co/ccQLSCjQ/IMG-1466.png" alt="Sara Najd Logo" style="width:100%;height:100%;object-fit:contain;">
+      </div>
+      <div style="font-size:20px;font-weight:600">سرا نجد</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">نظام إدارة المصاعد</div>
+    </div>
+    <input class="login-li" type="text" id="lu" placeholder="اسم المستخدم" autocomplete="off">
+    <input class="login-li" type="password" id="lp" placeholder="كلمة السر" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">دخول</button>
+    <button class="login-btn" id="btn-bio-login" onclick="handleBiometricClick()" style="margin-top:8px;background:var(--bg3);color:var(--text);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:6px">
+      <i class="ph-duotone ph-fingerprint" style="font-size:20px;color:var(--accent)"></i> الدخول السريع
+    </button>
+    <div id="lerr" style="color:var(--red);font-size:12px;text-align:center;margin-top:8px;min-height:16px"></div>
+    <div style="text-align:center;margin-top:14px">
+      <button onclick="viewOnly()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">عرض بدون تسجيل دخول</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- Biometric Scan Modal -->
+<div class="modal-ovl" id="bio-scan-modal" style="z-index:9999;backdrop-filter:blur(5px)">
+  <div class="modal" style="width:300px;text-align:center;padding:40px 20px;box-shadow:0 10px 40px rgba(0,0,0,0.2)">
+    <i class="ph-duotone ph-fingerprint" id="bio-scan-icon" style="font-size:72px;color:var(--accent);transition:all 0.3s"></i>
+    <div style="margin-top:20px;font-size:16px;font-weight:600" id="bio-scan-text">جاري التعرف...</div>
+  </div>
+</div>
+<style>
+  @keyframes bio-pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+  .bio-anim { animation: bio-pulse 1s infinite; }
+</style>
+
+<!-- App -->
+<div class="app" id="app-wrap" style="display:none">
+  <div class="sidebar" id="sidebar">
+    <div class="logo">
+      <div style="width:38px;height:38px;min-width:38px;display:flex;align-items:center;justify-content:center;">
+        <img src="https://i.ibb.co/ccQLSCjQ/IMG-1466.png" alt="Logo" style="width:100%;height:100%;object-fit:contain;">
+      </div>
+      <div class="hide-col">
+        <div style="font-size:14px;font-weight:600">سرا نجد</div>
+        <div style="font-size:10px;color:var(--text3)">Sara Najd Elevators</div>
+      </div>
+    </div>
+    <div style="overflow-y:auto;flex:1">
+      <div class="nav-sec">
+        <div class="nav-lbl hide-col">الرئيسية</div>
+        <div class="nav-item active" onclick="showPage('clients',this)"><span class="nav-icon"><i class="ph-duotone ph-users"></i></span><span class="hide-col">العملاء</span></div>
+        <div class="nav-item" onclick="showPage('contracts',this)"><span class="nav-icon"><i class="ph-duotone ph-file-text"></i></span><span class="hide-col">العقود</span></div>
+      </div>
+      <div class="nav-sec">
+        <div class="nav-lbl hide-col">المتابعة</div>
+        <div class="nav-item" onclick="showPage('visits',this)"><span class="nav-icon"><i class="ph-duotone ph-calendar-blank"></i></span><span class="hide-col">الزيارات</span></div>
+        <div class="nav-item red-nav" id="nav-urgent" onclick="showPage('urgent',this)"><span class="nav-icon"><i class="ph-duotone ph-warning-circle"></i></span><span class="hide-col">تحتاج تواصل</span></div>
+      </div>
+      <div class="nav-sec">
+        <div class="nav-lbl hide-col">عمليات</div>
+        <div class="nav-item orange-nav" id="nav-inst" onclick="showPage('installations',this)"><span class="nav-icon"><i class="ph-duotone ph-crane"></i></span><span class="hide-col">عقود التركيب</span></div>
+      </div>
+      <div class="nav-sec">
+        <div class="nav-lbl hide-col">التحليل</div>
+        <div class="nav-item" id="nav-reports" onclick="showPage('reports',this)"><span class="nav-icon"><i class="ph-duotone ph-chart-line-up"></i></span><span class="hide-col">التقارير</span></div>
+      </div>
+    </div>
+    <div class="sb-footer">
+      <div class="user-box">
+        <div class="user-av" id="user-av">؟</div>
+        <div class="hide-col">
+          <div style="font-size:12px;font-weight:500" id="uname">—</div>
+          <div style="font-size:10px;color:var(--text3)" id="urole">—</div>
+        </div>
+      </div>
+      <div class="hide-col" style="margin-top:7px">
+        <button onclick="doLogout()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:inherit">تسجيل خروج <i class="ph ph-sign-out" style="margin-right:4px"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="admin-bar" id="admin-bar" style="display:none">
+      <div class="admin-badge"><i class="ph-duotone ph-gear" style="font-size:16px"></i> وضع الإدارة — <span id="admin-name-bar"></span></div>
+      <div style="display:flex;gap:8px">
+        <button class="admin-btn btn-add" onclick="showAddModal()">+ إضافة عميل</button>
+      </div>
+    </div>
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="icon-btn" onclick="toggleSidebar()"><i class="ph ph-list" style="font-size:18px"></i></button>
+        <div>
+          <div class="page-title" id="pg-title">العملاء</div>
+          <div class="page-sub" id="pg-sub">جاري التحميل...</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="icon-btn" onclick="toggleTheme()" title="تغيير المظهر" id="theme-btn"><i class="ph-duotone ph-sun"></i></button>
+        <button class="icon-btn" onclick="loadData()" title="تحديث"><i class="ph ph-arrows-clockwise" style="font-size:16px"></i></button>
+      </div>
+    </div>
+
+    <!-- ═══ العملاء ═══ -->
+    <div class="pg active" id="pg-clients">
+      <div class="content">
+        <div class="stats">
+          <div class="stat"><div class="stat-lbl">إجمالي العملاء</div><div class="stat-val" id="s1">—</div></div>
+          <div class="stat"><div class="stat-lbl">تعاقد نشط</div><div class="stat-val" id="s2" style="color:var(--accent)">—</div></div>
+          <div class="stat"><div class="stat-lbl">تركيب / مجاني</div><div class="stat-val" id="s3" style="color:var(--green)">—</div></div>
+          <div class="stat"><div class="stat-lbl">عاجلة هذا الأسبوع</div><div class="stat-val" id="s4" style="color:var(--red)">—</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title" id="clients-lbl">قائمة العملاء</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+              <div class="search-wrap">
+                <input class="search-input" type="text" placeholder="بحث بالاسم أو المنطقة..." oninput="searchClients(this.value)" style="width:220px">
+                <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+              </div>
+              <select class="fsel" onchange="filterContract(this.value)">
+                <option value="">كل العقود</option>
+                <option value="تعاقد">تعاقد</option>
+                <option value="تركيب/مجاني">تركيب / مجاني</option>
+              </select>
+              <select class="fsel" id="area-sel" onchange="filterArea(this.value)">
+                <option value="">كل المناطق</option>
+              </select>
+            </div>
+          </div>
+          <div class="tw"><table class="tbl">
+            <thead><tr><th>#</th><th>اسم العميل</th><th>المنطقة</th><th>الهاتف</th><th>مصاعد</th><th>العقد</th><th>قيمة العقد</th><th>يوم الزيارة</th><th>الزيارة القادمة</th><th>المتبقي</th></tr></thead>
+            <tbody id="clients-tbody"></tbody>
+          </table></div>
+          <div class="pager" id="pager"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ العقود ═══ -->
+    <div class="pg" id="pg-contracts">
+      <div class="content">
+        <div class="stats">
+          <div class="stat"><div class="stat-lbl">تعاقد دوري</div><div class="stat-val" id="c1" style="color:var(--accent)">—</div></div>
+          <div class="stat"><div class="stat-lbl">تركيب / مجاني</div><div class="stat-val" id="c2" style="color:var(--green)">—</div></div>
+          <div class="stat"><div class="stat-lbl">بدون عقد</div><div class="stat-val" id="c3" style="color:var(--red)">—</div></div>
+          <div class="stat"><div class="stat-lbl">إجمالي قيمة العقود</div><div class="stat-val" id="c4" style="color:var(--purple);font-size:16px">—</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">تفاصيل العقود</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+              <div class="search-wrap">
+                <input class="search-input" type="text" placeholder="بحث..." oninput="searchContracts(this.value)" style="width:200px">
+                <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+              </div>
+              <select class="fsel" onchange="filterContractsType(this.value)">
+                <option value="">كل الأنواع</option>
+                <option value="تعاقد">تعاقد</option>
+                <option value="تركيب/مجاني">تركيب / مجاني</option>
+                <option value="">بدون عقد</option>
+              </select>
+            </div>
+          </div>
+          <div class="tw"><table class="tbl">
+            <thead><tr><th>#</th><th>العميل</th><th>المنطقة</th><th>نوع العقد</th><th>المدة</th><th>قيمة العقد</th><th>البداية</th><th>النهاية</th><th>الحالة</th></tr></thead>
+            <tbody id="contracts-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ الزيارات ═══ -->
+    <div class="pg" id="pg-visits">
+      <div class="content">
+        <div class="stats">
+          <div class="stat"><div class="stat-lbl">اليوم / متأخرة</div><div class="stat-val" id="v1" style="color:var(--red)">—</div></div>
+          <div class="stat"><div class="stat-lbl">هذا الأسبوع</div><div class="stat-val" id="v2" style="color:var(--amber)">—</div></div>
+          <div class="stat"><div class="stat-lbl">هذا الشهر</div><div class="stat-val" id="v3" style="color:var(--accent)">—</div></div>
+          <div class="stat"><div class="stat-lbl">لاحقاً</div><div class="stat-val" id="v4">—</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button id="vw-group" onclick="setVisitView('group')" class="icon-btn" style="font-size:12px;padding:6px 12px;background:var(--blue-bg);color:var(--accent)"><i class="ph-duotone ph-calendar-check" style="font-size:16px"></i> مجمّع</button>
+            <button id="vw-table" onclick="setVisitView('table')" class="icon-btn" style="font-size:12px;padding:6px 12px"><i class="ph-duotone ph-table" style="font-size:16px"></i> جدول</button>
+            <div class="search-wrap">
+              <input class="search-input" type="text" placeholder="بحث في الزيارات..." oninput="searchVisits(this.value)" style="width:200px">
+              <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+            </div>
+          </div>
+          <select class="fsel" id="visit-filter-sel" onchange="filterVisits(this.value)">
+            <option value="">الكل</option>
+            <option value="0">متأخرة</option>
+            <option value="7">هذا الأسبوع</option>
+            <option value="30">هذا الشهر</option>
+          </select>
+        </div>
+        <div id="visits-group-view"></div>
+        <div class="card" id="visits-table-view" style="display:none">
+          <div class="card-hdr"><div class="card-title">جدول الزيارات</div></div>
+          <div class="tw"><table class="tbl">
+            <thead><tr><th>#</th><th>العميل</th><th>المنطقة</th><th>الهاتف</th><th>يوم الزيارة</th><th>الزيارة القادمة</th><th>المتبقي</th><th>نوع الزيارة</th><th>ملاحظة</th></tr></thead>
+            <tbody id="visits-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ تحتاج تواصل ═══ -->
+    <div class="pg" id="pg-urgent">
+      <div class="content">
+        <div style="background:var(--red-bg);border:1px solid rgba(239,68,68,.2);border-radius:var(--r);padding:12px 15px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+          <i class="ph-duotone ph-warning-circle" style="font-size:24px;color:var(--red)"></i>
+          <div><div style="font-size:13px;font-weight:500;color:var(--red)">عملاء يحتاجون تواصل عاجل</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">م/ إسلام — مسؤول عمليات الصيانة</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title" id="urgent-lbl">—</div></div>
+          <div class="tw"><table class="tbl">
+            <thead><tr><th>#</th><th>العميل</th><th>المنطقة</th><th>الهاتف</th><th>ملاحظة</th></tr></thead>
+            <tbody id="urgent-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ عقود التركيب ═══ -->
+    <div class="pg" id="pg-installations">
+      <div class="content">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+          <div class="install-stat"><div class="install-stat-lbl">إجمالي العقود</div><div class="install-stat-val" id="inst-total" style="color:#f97316">—</div></div>
+          <div class="install-stat"><div class="install-stat-lbl">قيمة التحويل</div><div class="install-stat-val" id="inst-transfer" style="color:var(--accent);font-size:16px">—</div><div class="install-stat-sub">ريال</div></div>
+          <div class="install-stat"><div class="install-stat-lbl">قيمة الكاش</div><div class="install-stat-val" id="inst-cash" style="color:var(--green);font-size:16px">—</div><div class="install-stat-sub">ريال</div></div>
+          <div class="install-stat"><div class="install-stat-lbl">قيد التنفيذ</div><div class="install-stat-val" id="inst-inprogress" style="color:var(--amber)">—</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">عقود التركيب والمراحل</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+              <div class="search-wrap">
+                <input class="search-input" type="text" placeholder="بحث في التركيب..." oninput="searchInstallations(this.value)" style="width:200px">
+                <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+              </div>
+              <select class="fsel" id="inst-phase-sel" onchange="applyInstFilters()">
+                <option value="">كل الحالات</option>
+                <option value="pending">لم يبدأ</option>
+                <option value="phase1">المرحلة 1</option>
+                <option value="phase2">المرحلة 2</option>
+                <option value="phase3">المرحلة 3</option>
+                <option value="done">مكتمل</option>
+              </select>
+              <select class="fsel" id="inst-pay-sel" onchange="applyInstFilters()">
+                <option value="">طريقة الدفع</option>
+                <option value="تحويل">تحويل</option>
+                <option value="كاش">كاش</option>
+              </select>
+              <button class="admin-btn btn-add" id="add-inst-btn" onclick="showInstallModal()" style="display:none">+ إضافة</button>
+            </div>
+          </div>
+          <div class="tw"><table class="tbl">
+            <thead><tr><th>#</th><th>العميل</th><th>المنطقة</th><th>الهاتف</th><th>مصاعد</th><th>قيمة العقد</th><th>الدفع</th><th>الصيانة</th><th>البداية</th><th>المرحلة</th><th>الحالة</th></tr></thead>
+            <tbody id="inst-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ التقارير ═══ -->
+    <div class="pg" id="pg-reports">
+      <div class="content">
+        <!-- KPIs row -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px" id="rpt-kpis"></div>
+        <!-- Row 1 -->
+        <div class="rpt-grid">
+          <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-chart-pie-slice" style="color:var(--accent);font-size:18px"></i> توزيع العقود</div></div><div style="padding:15px" id="rpt1"></div></div>
+          <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-map-pin" style="color:var(--green);font-size:18px"></i> أكثر المناطق عملاء</div></div><div style="padding:15px" id="rpt2"></div></div>
+        </div>
+        <!-- Row 2 -->
+        <div class="rpt-grid">
+          <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-calendar-blank" style="color:var(--amber);font-size:18px"></i> توزيع مواعيد الزيارات</div></div><div style="padding:15px" id="rpt3"></div></div>
+          <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-coins" style="color:var(--purple);font-size:18px"></i> قيم العقود حسب المنطقة</div></div><div style="padding:15px" id="rpt5"></div></div>
+        </div>
+        <!-- Row 3 full -->
+        <div class="rpt-full">
+          <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-crane" style="color:#f97316;font-size:18px"></i> ملخص عقود التركيب</div></div><div style="padding:15px" id="rpt6"></div></div>
+        </div>
+        
+        <!-- Chart Row -->
+        <div class="rpt-grid">
+          <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-chart-line-up" style="color:var(--accent);font-size:18px"></i> عقود الصيانة الدورية (حسب البداية)</div></div><div style="padding:15px;min-height:300px" id="rpt-chart-maint"></div></div>
+          <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-crane" style="color:#f97316;font-size:18px"></i> عقود التركيب والمجاني</div></div><div style="padding:15px;min-height:300px" id="rpt-chart-inst"></div></div>
+        </div>
+
+        <!-- Team -->
+        <div class="rpt-full">
+          <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-users-three" style="color:var(--accent);font-size:18px"></i> فريق سرا نجد</div></div><div style="padding:15px" id="rpt4"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Client Panel -->
+<div class="ovl" id="ovl" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <div class="panel-hdr">
+    <div class="panel-title" id="panel-name">تفاصيل العميل</div>
+    <button class="close-btn" onclick="closePanel()"><i class="ph ph-x" style="font-size:14px"></i></button>
+  </div>
+  <div id="panel-body"></div>
+</div>
+
+<!-- Client Modal -->
+<div class="modal-ovl" id="client-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">إضافة عميل</div>
+    <div class="modal-grid">
+      <div class="ef"><label class="el">اسم العميل *</label><input class="ei" id="f-name" placeholder="اسم العميل"></div>
+      <div class="ef"><label class="el">رقم التواصل</label><input class="ei" id="f-phone" placeholder="05xxxxxxxx"></div>
+      <div class="ef"><label class="el">المنطقة</label><input class="ei" id="f-area"></div>
+      <div class="ef"><label class="el">عدد المصاعد</label><input class="ei" id="f-elev" type="number" min="1" value="1"></div>
+      <div class="ef"><label class="el">نوع العقد</label>
+        <select class="es" id="f-contract">
+          <option value="">بدون عقد</option>
+          <option value="تعاقد">تعاقد دوري</option>
+          <option value="تركيب/مجاني">تركيب / مجاني</option>
+        </select>
+      </div>
+      <div class="ef"><label class="el">نوع مخصص للعقد</label><input class="ei" id="f-contract-custom" placeholder="مثال: نصف سنوي..."></div>
+      <div class="ef"><label class="el">مدة العقد</label><input class="ei" id="f-duration" placeholder="1 year / 6 months"></div>
+      <div class="ef"><label class="el">قيمة العقد (ريال)</label><input class="ei" id="f-value" type="number" placeholder="0"></div>
+      <div class="ef"><label class="el">نوع الزيارة</label>
+        <select class="es" id="f-visit" onchange="updateNextDatePreview()">
+          <option value="">غير محدد</option>
+          <option value="شهرية">شهرية</option>
+          <option value="كل شهرين">كل شهرين</option>
+        </select>
+      </div>
+      <div class="ef">
+        <label class="el">يوم الزيارة الثابت (1-31)</label>
+        <input class="ei" id="f-day" type="number" min="1" max="31" placeholder="رقم اليوم" oninput="updateNextDatePreview()">
+        <div class="next-date-preview" id="next-date-preview"></div>
+      </div>
+      <div class="ef"><label class="el">بداية العقد</label><input class="ei" id="f-start" type="date"></div>
+      <div class="ef"><label class="el">نهاية العقد</label><input class="ei" id="f-end" type="date"></div>
+    </div>
+    <div class="ef" style="margin-top:6px"><label class="el">ملاحظة</label><textarea class="ei" id="f-note" rows="2"></textarea></div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:8px"><input type="checkbox" id="f-contact"> يحتاج تواصل (تمييز أحمر)</label>
+    <div class="modal-footer">
+      <button class="admin-btn btn-cancel" onclick="closeModal('client-modal')">إلغاء</button>
+      <button class="admin-btn btn-save" onclick="saveClient()"><i class="ph-duotone ph-floppy-disk" style="font-size:16px"></i> حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Installation Modal -->
+<div class="modal-ovl" id="inst-modal">
+  <div class="modal">
+    <div class="modal-title" id="inst-modal-title">إضافة عقد تركيب</div>
+    <div class="modal-grid">
+      <div class="ef"><label class="el">العميل *</label><input class="ei" id="i-name" placeholder="اسم العميل"></div>
+      <div class="ef"><label class="el">رقم التواصل</label><input class="ei" id="i-phone" placeholder="05xxxxxxxx"></div>
+      <div class="ef"><label class="el">المنطقة</label><input class="ei" id="i-area"></div>
+      <div class="ef"><label class="el">عدد المصاعد</label><input class="ei" id="i-elev" type="number" min="1" value="1"></div>
+      <div class="ef"><label class="el">قيمة العقد (ريال) *</label><input class="ei" id="i-value" type="number" placeholder="0"></div>
+      <div class="ef"><label class="el">طريقة الدفع</label>
+        <select class="es" id="i-payment"><option value="تحويل">تحويل بنكي</option><option value="كاش">كاش</option></select>
+      </div>
+      <div class="ef"><label class="el">فترة الصيانة</label>
+        <select class="es" id="i-maintenance"><option value="سنة">سنة واحدة</option><option value="سنتان">سنتان</option></select>
+      </div>
+      <div class="ef"><label class="el">بداية العقد</label><input class="ei" id="i-start" type="date"></div>
+      <div class="ef"><label class="el">المرحلة الحالية</label>
+        <select class="es" id="i-phase">
+          <option value="pending">لم يبدأ بعد</option>
+          <option value="phase1">المرحلة 1</option>
+          <option value="phase2">المرحلة 2</option>
+          <option value="phase3">المرحلة 3</option>
+          <option value="done">مكتمل ومسلّم</option>
+        </select>
+      </div>
+      <div class="ef"><label class="el">الدفعة الأولى</label>
+        <select class="es" id="i-p1"><option value="0">لم تُسدَّد</option><option value="1">مسددة <i class="ph-bold ph-check"></i></option></select>
+      </div>
+      <div class="ef"><label class="el">الدفعة الثانية</label>
+        <select class="es" id="i-p2"><option value="0">لم تُسدَّد</option><option value="1">مسددة <i class="ph-bold ph-check"></i></option></select>
+      </div>
+      <div class="ef"><label class="el">الدفعة النهائية</label>
+        <select class="es" id="i-p3"><option value="0">لم تُسدَّد</option><option value="1">مسددة <i class="ph-bold ph-check"></i></option></select>
+      </div>
+      <div class="ef"><label class="el">تم التسليم؟</label>
+        <select class="es" id="i-done"><option value="0">لا</option><option value="1">نعم — تم التسليم <i class="ph-bold ph-check"></i></option></select>
+      </div>
+    </div>
+    <div class="ef" style="margin-top:6px"><label class="el">ملاحظات</label><textarea class="ei" id="i-note" rows="2"></textarea></div>
+    <div class="modal-footer">
+      <button class="admin-btn btn-cancel" onclick="closeModal('inst-modal')">إلغاء</button>
+      <button class="admin-btn btn-save" onclick="saveInstallation()"><i class="ph-duotone ph-floppy-disk" style="font-size:16px"></i> حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL = 'https://fnaojekjpdkczxdylace.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuYW9qZWtqcGRrY3p4ZHlsYWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NTU0MDEsImV4cCI6MjA5MjIzMTQwMX0.PvVFECvVlDZn8tJXnerpOOWuXF8893y6vEg1PzDsgos';
+
+
+// --- Theme Logic ---
+function toggleTheme() {
+  document.body.classList.toggle('light-mode');
+  const isLight = document.body.classList.contains('light-mode');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  const iconHtml = isLight ? '<i class="ph-duotone ph-moon"></i>' : '<i class="ph-duotone ph-sun"></i>';
+  const tb = document.getElementById('theme-btn');
+  const tbl = document.getElementById('theme-btn-login');
+  if(tb) tb.innerHTML = iconHtml;
+  if(tbl) tbl.innerHTML = iconHtml;
+  
+  if(window.rptChartInstanceMaint) {
+    window.rptChartInstanceMaint.updateOptions({ theme: { mode: isLight ? 'light' : 'dark' } });
+    window.rptChartInstanceInst.updateOptions({ theme: { mode: isLight ? 'light' : 'dark' } });
+  }
+}
+if(localStorage.getItem('theme') === 'light') {
+  document.body.classList.add('light-mode');
+  window.addEventListener('DOMContentLoaded', () => {
+    const tb = document.getElementById('theme-btn');
+    const tbl = document.getElementById('theme-btn-login');
+    if(tb) tb.innerHTML = '<i class="ph-duotone ph-moon"></i>';
+    if(tbl) tbl.innerHTML = '<i class="ph-duotone ph-moon"></i>';
+  });
+}
+// --------------------
+
+const USERS = {
+  'hamid':   { pass:'saranajd2024', name:'م/ حامد ربيع',  role:'المدير التنفيذي', isAdmin:true },
+  'youssef': { pass:'yn2024',       name:'يوسف حامد',     role:'مدير النظام',     isAdmin:true },
+  'islam':   { pass:'islam2024',    name:'م/ إسلام',       role:'مسؤول العمليات', isAdmin:true },
+};
+let me = null, isAdmin = false;
+
+
+
+
+function doLogin() {
+  const u = document.getElementById('lu').value.trim().toLowerCase();
+  const p = document.getElementById('lp').value;
+  const user = USERS[u];
+  if(user && user.pass === p) { 
+    me = user; 
+    isAdmin = user.isAdmin; 
+    startApp(); 
+  }
+  else document.getElementById('lerr').textContent = 'اسم المستخدم أو كلمة السر غلط';
+}
+
+async function handleBiometricClick() {
+  const u = document.getElementById('lu').value.trim().toLowerCase();
+  const p = document.getElementById('lp').value;
+  
+  // 1. If fields are empty, try to login using existing biometric
+  if (!u && !p) {
+    const savedUser = localStorage.getItem('mock_bio_user');
+    if (savedUser && USERS[savedUser]) {
+      await runBioScan(true);
+      me = USERS[savedUser];
+      isAdmin = me.isAdmin;
+      startApp();
+      showToast('تم تسجيل الدخول السريع بنجاح', 'success');
+    } else {
+      showToast('يجب إدخال اسم المستخدم وكلمة المرور أولاً لتفعيل الدخول السريع', 'error');
+    }
+    return;
+  }
+  
+  // 2. If fields are not empty, validate and activate biometric
+  const user = USERS[u];
+  if (user && user.pass === p) {
+    await runBioScan(true);
+    localStorage.setItem('mock_bio_user', u);
+    me = user;
+    isAdmin = user.isAdmin;
+    startApp();
+    showToast('تم تفعيل الدخول السريع وتسجيل الدخول بنجاح!', 'success');
+  } else {
+    document.getElementById('lerr').textContent = 'اسم المستخدم أو كلمة السر غلط، لا يمكن تفعيل الدخول السريع';
+  }
+}
+
+function runBioScan(success) {
+  return new Promise(resolve => {
+    const modal = document.getElementById('bio-scan-modal');
+    const icon = document.getElementById('bio-scan-icon');
+    const text = document.getElementById('bio-scan-text');
+    
+    modal.classList.add('show');
+    icon.className = 'ph-duotone ph-fingerprint bio-anim';
+    icon.style.color = 'var(--accent)';
+    text.textContent = 'جاري التعرف...';
+    
+    setTimeout(() => {
+      icon.classList.remove('bio-anim');
+      icon.className = 'ph-fill ph-check-circle';
+      icon.style.color = 'var(--green)';
+      text.textContent = 'تم التعرف بنجاح!';
+      
+      setTimeout(() => {
+        modal.classList.remove('show');
+        resolve();
+      }, 800);
+    }, 1500);
+  });
+}
+
+function viewOnly() { me={name:"زائر",role:"عرض فقط",isAdmin:false}; isAdmin=false; startApp(); }
+
+function startApp() {
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('app-wrap').style.display = 'flex';
+  document.getElementById('user-av').textContent = me.name[0];
+  document.getElementById('uname').textContent = me.name;
+  document.getElementById('urole').textContent = me.role;
+  if(isAdmin){
+    document.getElementById('admin-bar').style.display='flex';
+    document.getElementById('admin-name-bar').textContent=me.name;
+    document.getElementById('add-inst-btn').style.display='';
+    document.getElementById('nav-urgent').style.display='flex';
+    document.getElementById('nav-inst').style.display='flex';
+    document.getElementById('nav-reports').style.display='flex';
+  } else {
+    document.getElementById('admin-bar').style.display='none';
+    if(document.getElementById('add-inst-btn')) document.getElementById('add-inst-btn').style.display='none';
+    document.getElementById('nav-urgent').style.display='none';
+    document.getElementById('nav-inst').style.display='none';
+    document.getElementById('nav-reports').style.display='none';
+  }
+  loadData();
+}
+function doLogout(){
+  me=null;isAdmin=false;
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('app-wrap').style.display='none';
+  document.getElementById('admin-bar').style.display='none';
+  document.getElementById('lu').value='';document.getElementById('lp').value='';
+  document.getElementById('lerr').textContent='';
+}
+
+async function sbFetch(path,opts={}){
+  const r=await fetch(`${SB_URL}/rest/v1/${path}`,{
+    headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=representation',...(opts.headers||{})},
+    ...opts
+  });
+  if(!r.ok) throw new Error(await r.text());
+  const t=await r.text(); return t?JSON.parse(t):[];
+}
+
+// ─── Date helpers ───
+
+const hiddenTxt = '<span style="color:var(--text3);font-size:10px;background:var(--bg3);padding:2px 6px;border-radius:4px">للإدارة فقط</span>';
+const AR_DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+function calcNextDate(visitDay,visitType){
+  if(!visitDay||visitDay<1) return {nextDate:'',remaining:0};
+  const today=new Date(); today.setHours(0,0,0,0);
+  const day=parseInt(visitDay);
+  const intervalMonths=visitType==='كل شهرين'?2:1;
+  let candidate=new Date(today.getFullYear(),today.getMonth(),day);
+  if(candidate<=today) candidate=new Date(today.getFullYear(),today.getMonth()+intervalMonths,day);
+  let safety=0;
+  while(candidate.getDate()!==day&&safety++<12)
+    candidate=new Date(candidate.getFullYear(),candidate.getMonth()+1,day);
+  const remaining=Math.ceil((candidate-today)/(1000*60*60*24));
+  const y = candidate.getFullYear();
+  const m = String(candidate.getMonth()+1).padStart(2,'0');
+  const d = String(candidate.getDate()).padStart(2,'0');
+  return {nextDate:`${y}-${m}-${d}`,remaining};
+}
+
+function formatDateAr(ds){
+  if(!ds) return '—';
+  const d=new Date(ds+'T00:00:00');
+  return `${AR_DAYS[d.getDay()]} ${d.getDate()} ${AR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+function formatDateShortAr(ds){
+  if(!ds) return '—';
+  const d=new Date(ds+'T00:00:00');
+  return `${d.getDate()} ${AR_MONTHS[d.getMonth()]}`;
+}
+
+function updateNextDatePreview(){
+  const day=parseInt(document.getElementById('f-day').value)||0;
+  const type=document.getElementById('f-visit').value;
+  const prev=document.getElementById('next-date-preview');
+  if(!day||day<1||day>31){prev.textContent='';return;}
+  const {nextDate,remaining}=calcNextDate(day,type);
+  prev.textContent=nextDate?`→ الزيارة القادمة: ${formatDateAr(nextDate)} (بعد ${remaining} يوم)`:'';
+}
+
+// ─── Data & state ───
+let raw=[],installations=[],filtered=[],pg=1,perPage=20;
+let contractF='',areaF='',clientSearchQ='';
+let contractsSearchQ='',contractsTypeF='';
+let visitsSearchQ='',visitViewMode='group',currentVisitFilter='';
+let instSearchQ='';
+let editingId=null,editingInstId=null;
+
+async function loadData(){
+  try{
+    document.getElementById('pg-sub').textContent='جاري التحميل...';
+    raw=await sbFetch('clients?select=*&order=id.asc');
+    raw=raw.map(c=>{
+      if(c.visit_day&&c.visit_day>0){
+        const {nextDate,remaining}=calcNextDate(c.visit_day,c.visit);
+        return {...c,next_date:nextDate,remaining};
+      }
+      return c;
+    });
+    try{installations=await sbFetch('installations?select=*&order=id.asc');}
+    catch(e){installations=[];}
+
+    const areas=[...new Set(raw.map(c=>c.area).filter(Boolean))].sort();
+    const asel=document.getElementById('area-sel');
+    asel.innerHTML='<option value="">كل المناطق</option>';
+    areas.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;asel.appendChild(o);});
+
+    updateStats();
+    renderClients(applyClientFilters(),1);
+    showToast('تم تحميل البيانات','success');
+  }catch(e){
+    document.getElementById('pg-sub').textContent='خطأ في التحميل';
+    showToast('خطأ: '+e.message.slice(0,60),'error');
+  }
+}
+
+function updateStats(){
+  document.getElementById('s1').textContent=raw.length;
+  document.getElementById('s2').textContent=raw.filter(c=>c.contract==='تعاقد').length;
+  document.getElementById('s3').textContent=raw.filter(c=>isInstall(c)).length;
+  document.getElementById('s4').textContent=raw.filter(c=>c.visit_day&&c.remaining<=7).length;
+}
+
+const isInstall=c=>['تركيب/مجاني','تركيب','مجاني','استكمال تركيب'].includes(c.contract);
+const cb=c=>{
+  if(c==='تعاقد') return '<span class="b b-blue">تعاقد</span>';
+  if(isInstall({contract:c})) return '<span class="b b-orange">تركيب/مجاني</span>';
+  if(c) return `<span class="b b-gray">${c}</span>`;
+  return '<span class="b b-gray">—</span>';
+};
+const rb=r=>{
+  if(r<=0) return '<span class="b b-red">اليوم!</span>';
+  if(r<=3) return `<span class="b b-red">${r} يوم</span>`;
+  if(r<=7) return `<span class="b b-amber">${r} يوم</span>`;
+  if(r<=14) return `<span class="b b-blue">${r} يوم</span>`;
+  return `<span class="b b-gray">${r} يوم</span>`;
+};
+const fmtMoney=v=>v?Number(v).toLocaleString('en-US')+' ﷼':'—';
+const phaseBadge=p=>({pending:'<span class="b b-gray">لم يبدأ</span>',phase1:'<span class="b b-amber">مرحلة 1</span>',phase2:'<span class="b b-blue">مرحلة 2</span>',phase3:'<span class="b b-purple">مرحلة 3</span>',done:'<span class="b b-green">مكتمل <i class="ph-bold ph-check"></i></span>'})[p]||'<span class="b b-gray">—</span>';
+
+// ─── Client filters ───
+function applyClientFilters(){
+  let r=[...raw];
+  if(contractF==='تركيب/مجاني') r=r.filter(c=>isInstall(c));
+  else if(contractF) r=r.filter(c=>c.contract===contractF);
+  if(areaF) r=r.filter(c=>c.area===areaF);
+  if(clientSearchQ) r=r.filter(c=>c.name.includes(clientSearchQ)||(c.phone&&c.phone.includes(clientSearchQ))||(c.area&&c.area.includes(clientSearchQ)));
+  return r;
+}
+function searchClients(q){clientSearchQ=q;renderClients(applyClientFilters(),1);}
+function filterContract(v){contractF=v;renderClients(applyClientFilters(),1);}
+function filterArea(v){areaF=v;renderClients(applyClientFilters(),1);}
+
+function renderClients(list,p){
+  pg=p||1; filtered=list;
+  const s=(pg-1)*perPage,rows=list.slice(s,s+perPage);
+  document.getElementById('clients-tbody').innerHTML=rows.map(c=>`
+    <tr class="${c.needs_contact?'row-red':''}" onclick="openPanel(${c.id})">
+      <td style="color:var(--text3)">${c.id}</td>
+      <td style="font-weight:500">${c.name}</td>
+      <td style="color:var(--text2)">${c.area||'—'}</td>
+      <td style="direction:ltr;text-align:right">${isAdmin ? (c.phone?`<a href="tel:+966${c.phone}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${c.phone}</a>`:'—') : hiddenTxt}</td>
+      <td style="text-align:center">${c.elevators}</td>
+      <td>${isAdmin ? cb(c.contract) : hiddenTxt}</td>
+      <td style="color:var(--text2)">${isAdmin ? fmtMoney(c.contract_value) : hiddenTxt}</td>
+      <td style="color:var(--accent);font-weight:600">${c.visit_day?'يوم '+c.visit_day:'—'}</td>
+      <td style="color:var(--text2)">${c.next_date?formatDateShortAr(c.next_date):'—'}</td>
+      <td>${c.visit_day?rb(c.remaining):'<span class="b b-gray">—</span>'}</td>
+    </tr>`).join('');
+  document.getElementById('clients-lbl').textContent=`قائمة العملاء (${list.length})`;
+  document.getElementById('pg-sub').textContent=`${list.length} من ${raw.length} عميل`;
+  const tot=Math.ceil(list.length/perPage);
+  document.getElementById('pager').innerHTML=tot>1?`
+    <button class="pgr-btn" onclick="renderClients(filtered,${Math.max(1,pg-1)})" ${pg===1?'disabled':''}>السابق</button>
+    <span>صفحة ${pg} من ${tot}</span>
+    <button class="pgr-btn" onclick="renderClients(filtered,${Math.min(tot,pg+1)})" ${pg===tot?'disabled':''}>التالي</button>`:'';
+}
+
+// ─── Panel ───
+function openPanel(id){
+  const c=raw.find(x=>x.id===id);
+  const {nextDate,remaining}=c.visit_day?calcNextDate(c.visit_day,c.visit):{nextDate:c.next_date||'',remaining:c.remaining||0};
+  let dots='';
+  if(c.start_date){
+    const s=new Date(c.start_date),now=new Date(),months=c.duration?parseInt(c.duration)*12:12;
+    const total=Math.min(12,months),done=Math.max(0,Math.min(Math.round((now-s)/(30*24*3600*1000)),total));
+    dots=Array.from({length:total},(_,i)=>`<div class="md ${i<done?'md-done':i===done?'md-cur':'md-pend'}">${i+1}</div>`).join('');
+  }
+  document.getElementById('panel-name').textContent=c.name;
+  document.getElementById('panel-body').innerHTML=`
+    ${c.needs_contact?`<div style="background:var(--red-bg);padding:9px 16px;border-bottom:1px solid rgba(239,68,68,.2);display:flex;align-items:center;gap:8px"><i class="ph-duotone ph-warning-circle" style="font-size:16px;color:var(--red)"></i><span style="font-size:12px;color:var(--red);font-weight:500">يحتاج تواصل — م/ إسلام</span></div>`:''}
+    <div class="panel-sec"><div class="sec-lbl">بيانات العميل</div>
+      <div class="ir"><span class="il">المنطقة</span><span class="iv">${c.area||'—'}</span></div>
+      <div class="ir"><span class="il">الهاتف</span><span class="iv" style="direction:ltr">${isAdmin ? (c.phone?`<a href="tel:+966${c.phone}" style="color:var(--accent)">${c.phone}</a>`:'—') : hiddenTxt}</span></div>
+      <div class="ir"><span class="il">عدد المصاعد</span><span class="iv">${c.elevators}</span></div>
+    </div>
+    <div class="panel-sec"><div class="sec-lbl">العقد</div>
+      ${isAdmin ? `
+      <div class="ir"><span class="il">نوع العقد</span><span class="iv">${cb(c.contract)}${c.contract_custom?' <small style="color:var(--text3)">'+c.contract_custom+'</small>':''}</span></div>
+      <div class="ir"><span class="il">مدة العقد</span><span class="iv">${c.duration||'—'}</span></div>
+      <div class="ir"><span class="il">قيمة العقد</span><span class="iv" style="color:var(--green)">${fmtMoney(c.contract_value)}</span></div>
+      <div class="ir"><span class="il">بداية العقد</span><span class="iv">${c.start_date||'—'}</span></div>
+      <div class="ir"><span class="il">نهاية العقد</span><span class="iv">${c.end_date||'—'}</span></div>
+      ` : `<div style="text-align:center;padding:12px 0;color:var(--text3);font-size:12px;background:var(--bg3);border-radius:4px;margin-top:4px"><i class="ph ph-lock" style="font-size:16px;margin-bottom:4px;display:block"></i>هذه البيانات متاحة للإدارة فقط</div>`}
+    </div>
+    ${(isAdmin && dots)?`<div class="panel-sec"><div class="sec-lbl">تقدم الزيارات</div><div class="month-grid">${dots}</div></div>`:''}
+    <div class="panel-sec"><div class="sec-lbl">الزيارة القادمة</div>
+      <div class="ir"><span class="il">يوم الزيارة</span><span class="iv" style="color:var(--accent);font-weight:600">${isAdmin ? (c.visit_day?'كل '+c.visit+' — يوم '+c.visit_day:'—') : (c.visit_day?'يوم '+c.visit_day:'—')}</span></div>
+      <div class="ir"><span class="il">الزيارة القادمة</span><span class="iv" style="color:var(--accent)">${nextDate?formatDateAr(nextDate):'—'}</span></div>
+      <div class="ir"><span class="il">المتبقي</span><span class="iv">${c.visit_day?rb(remaining):'—'}</span></div>
+      ${c.note?`<div style="margin-top:7px"><div class="sec-lbl">ملاحظة</div><div class="note-box">${c.note}</div></div>`:''}
+    </div>
+    <div class="panel-sec">
+      ${(isAdmin && c.phone)?`<button class="wa-btn" onclick="window.open('https://wa.me/966${c.phone}','_blank')"><i class="ph-fill ph-whatsapp-logo" style="font-size:16px"></i> واتساب ${c.name.split(' ')[0]}</button>`:''}
+      ${isAdmin?`<button class="act-btn" onclick="closePanel();showEditModal(${c.id})"><i class="ph-duotone ph-pencil-simple" style="font-size:16px"></i> تعديل بيانات العميل</button>
+      <button onclick="deleteClient(${c.id})" style="background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);padding:9px;font-size:13px;cursor:pointer;width:100%;font-family:inherit;font-weight:500"><i class="ph-duotone ph-trash" style="font-size:16px"></i> حذف</button>`:''}
+    </div>`;
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('ovl').classList.add('show');
+}
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('ovl').classList.remove('show');
+}
+
+// ─── Pages ───
+function showPage(page,el){
+  if (!isAdmin && ['urgent', 'installations', 'reports'].includes(page)) {
+    showToast('عذراً، هذه الصفحة متاحة للإدارة فقط', 'error');
+    return;
+  }
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+page).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles={clients:'العملاء',contracts:'العقود',visits:'الزيارات القادمة',urgent:'تحتاج تواصل',installations:'عقود التركيب',reports:'التقارير'};
+  document.getElementById('pg-title').textContent=titles[page];
+  if(page==='contracts') renderContracts();
+  if(page==='visits') renderVisits(currentVisitFilter);
+  if(page==='urgent') renderUrgent();
+  if(page==='installations') renderInstallations();
+  if(page==='reports') renderReports();
+  document.getElementById('sidebar').classList.remove('mobile-open');
+}
+
+// ─── Contracts ───
+function applyContractFilters(){
+  let r=[...raw];
+  if(contractsTypeF==='تركيب/مجاني') r=r.filter(c=>isInstall(c));
+  else if(contractsTypeF) r=r.filter(c=>c.contract===contractsTypeF);
+  if(contractsSearchQ) r=r.filter(c=>c.name.includes(contractsSearchQ)||(c.area&&c.area.includes(contractsSearchQ)));
+  return r;
+}
+function searchContracts(q){contractsSearchQ=q;renderContracts();}
+function filterContractsType(v){contractsTypeF=v;renderContracts();}
+
+function renderContracts(){
+  document.getElementById('c1').textContent=raw.filter(c=>c.contract==='تعاقد').length;
+  document.getElementById('c2').textContent=raw.filter(c=>isInstall(c)).length;
+  document.getElementById('c3').textContent=raw.filter(c=>!c.contract).length;
+  const totalVal=raw.reduce((s,c)=>s+(Number(c.contract_value)||0),0);
+  document.getElementById('c4').innerHTML=isAdmin ? (totalVal.toLocaleString('en-US')+' ﷼') : hiddenTxt;
+
+  const list=applyContractFilters();
+  document.getElementById('contracts-tbody').innerHTML=list.map(c=>`
+    <tr class="${c.needs_contact?'row-red':''}" onclick="openPanel(${c.id})">
+      <td style="color:var(--text3)">${c.id}</td><td style="font-weight:500">${c.name}</td>
+      <td style="color:var(--text2)">${c.area||'—'}</td><td>${isAdmin ? cb(c.contract) : hiddenTxt}</td>
+      <td style="color:var(--text2)">${isAdmin ? c.duration||'—' : hiddenTxt}</td>
+      <td style="color:var(--green);font-weight:500">${isAdmin ? fmtMoney(c.contract_value) : hiddenTxt}</td>
+      <td style="color:var(--text2)">${isAdmin ? c.start_date||'—' : hiddenTxt}</td><td style="color:var(--text2)">${isAdmin ? c.end_date||'—' : hiddenTxt}</td>
+      <td>${c.visit_day&&c.remaining<=0?'<span class="b b-red">اليوم</span>':c.visit_day&&c.remaining<=30?'<span class="b b-amber">قريباً</span>':'<span class="b b-green">سارية</span>'}</td>
+    </tr>`).join('');
+}
+
+// ─── Visits ───
+function setVisitView(mode){
+  visitViewMode=mode;
+  document.getElementById('vw-group').style.cssText=mode==='group'?'font-size:12px;padding:6px 12px;background:var(--blue-bg);color:var(--accent);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;font-family:inherit':'font-size:12px;padding:6px 12px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;font-family:inherit';
+  document.getElementById('vw-table').style.cssText=mode==='table'?'font-size:12px;padding:6px 12px;background:var(--blue-bg);color:var(--accent);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;font-family:inherit':'font-size:12px;padding:6px 12px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;font-family:inherit';
+  document.getElementById('visits-group-view').style.display=mode==='group'?'':'none';
+  document.getElementById('visits-table-view').style.display=mode==='table'?'':'none';
+  renderVisits(currentVisitFilter);
+}
+function filterVisits(f){currentVisitFilter=f;renderVisits(f);}
+function searchVisits(q){visitsSearchQ=q;renderVisits(currentVisitFilter);}
+
+function renderVisits(f){
+  let list=[...raw].filter(c=>c.visit_day).sort((a,b)=>a.remaining-b.remaining);
+  if(f==='0') list=list.filter(c=>c.remaining<=0);
+  else if(f==='7') list=list.filter(c=>c.remaining>0&&c.remaining<=7);
+  else if(f==='30') list=list.filter(c=>c.remaining<=30);
+  if(visitsSearchQ) list=list.filter(c=>c.name.includes(visitsSearchQ)||(c.area&&c.area.includes(visitsSearchQ)));
+
+  const sv=raw.filter(c=>c.visit_day);
+  document.getElementById('v1').textContent=sv.filter(c=>c.remaining<=0).length;
+  document.getElementById('v2').textContent=sv.filter(c=>c.remaining>0&&c.remaining<=7).length;
+  document.getElementById('v3').textContent=sv.filter(c=>c.remaining>0&&c.remaining<=30).length;
+  document.getElementById('v4').textContent=sv.filter(c=>c.remaining>30).length;
+
+  // Table
+  document.getElementById('visits-tbody').innerHTML=list.map(c=>`
+    <tr class="${c.needs_contact?'row-red':''}" onclick="openPanel(${c.id})">
+      <td style="color:var(--text3)">${c.id}</td><td style="font-weight:500">${c.name}</td>
+      <td style="color:var(--text2)">${c.area||'—'}</td>
+      <td style="direction:ltr;text-align:right">${isAdmin ? c.phone||'—' : hiddenTxt}</td>
+      <td style="color:var(--accent);font-weight:600">يوم ${c.visit_day}</td>
+      <td style="color:var(--text2)">${c.next_date?formatDateAr(c.next_date):'—'}</td>
+      <td>${rb(c.remaining)}</td>
+      <td style="color:var(--text2)">${isAdmin ? c.visit||'—' : hiddenTxt}</td>
+      <td style="color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis">${c.note||'—'}</td>
+    </tr>`).join('');
+
+  // Groups
+  const byDay={};
+  list.forEach(c=>{
+    const key=c.visit_day;
+    if(!byDay[key]) byDay[key]={day:key,nextDate:c.next_date,remaining:c.remaining,clients:[]};
+    byDay[key].clients.push(c);
+  });
+  const sortedDays=Object.values(byDay).sort((a,b)=>a.remaining-b.remaining);
+  const gv=document.getElementById('visits-group-view');
+  if(!sortedDays.length){gv.innerHTML=`<div style="text-align:center;color:var(--text3);padding:40px">لا توجد زيارات</div>`;return;}
+  gv.innerHTML=sortedDays.map(group=>{
+    const r=group.remaining;
+    const cls=r<=0?'vdg-overdue':r<=7?'vdg-soon':'';
+    const d=group.nextDate?new Date(group.nextDate+'T00:00:00'):null;
+    const fullDate=d?`${AR_DAYS[d.getDay()]} ${d.getDate()} ${AR_MONTHS[d.getMonth()]} ${d.getFullYear()}`:'—';
+    const rows=group.clients.map(c=>`
+      <tr class="${c.needs_contact?'row-red':''}" onclick="openPanel(${c.id})" style="cursor:pointer">
+        <td style="color:var(--text3);font-size:11px">${c.id}</td>
+        <td style="font-weight:500">${c.name}</td>
+        <td style="color:var(--text2)">${c.area||'—'}</td>
+        <td style="direction:ltr;text-align:right">${isAdmin ? (c.phone?`<a href="tel:+966${c.phone}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${c.phone}</a>`:'—') : hiddenTxt}</td>
+        <td style="color:var(--text2)">${isAdmin ? c.visit||'—' : hiddenTxt}</td>
+        <td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis">${c.note||'—'}</td>
+      </tr>`).join('');
+    return `<div class="visit-day-group">
+      <div class="vdg-header ${cls}">
+        <div class="vdg-day-num">${group.day}</div>
+        <div class="vdg-day-info">
+          <div class="vdg-day-name">${fullDate}</div>
+          <div class="vdg-day-date">${r<=0?'<i class="ph-bold ph-warning" style="margin-left:2px"></i> متأخرة':'بعد '+r+' يوم'}</div>
+        </div>
+        <div class="vdg-count">${group.clients.length} عميل</div>
+      </div>
+      <div class="vdg-table"><table class="tbl">
+        <thead><tr><th>#</th><th>العميل</th><th>المنطقة</th><th>الهاتف</th><th>نوع الزيارة</th><th>ملاحظة</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+    </div>`;
+  }).join('');
+}
+
+function renderUrgent(){
+  const u=raw.filter(c=>c.needs_contact);
+  document.getElementById('urgent-lbl').textContent=`${u.length} عملاء يحتاجون تواصل`;
+  document.getElementById('urgent-tbody').innerHTML=u.map(c=>`
+    <tr class="row-red" onclick="openPanel(${c.id})">
+      <td style="color:var(--text3)">${c.id}</td><td style="font-weight:500">${c.name}</td>
+      <td style="color:var(--text2)">${c.area||'—'}</td>
+      <td style="direction:ltr;text-align:right">${isAdmin ? (c.phone?`<a href="tel:+966${c.phone}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${c.phone}</a>`:'—') : hiddenTxt}</td>
+      <td style="color:var(--text2);max-width:220px;overflow:hidden;text-overflow:ellipsis">${c.note||'—'}</td>
+    </tr>`).join('');
+}
+
+// ─── Installations ───
+function applyInstFilters(){
+  const phaseF=document.getElementById('inst-phase-sel').value;
+  const payF=document.getElementById('inst-pay-sel').value;
+  let list=[...installations];
+  if(phaseF) list=list.filter(i=>i.phase===phaseF);
+  if(payF) list=list.filter(i=>i.payment_method===payF);
+  if(instSearchQ) list=list.filter(i=>i.client_name.includes(instSearchQ)||(i.area&&i.area.includes(instSearchQ))||(i.phone&&i.phone.includes(instSearchQ)));
+  renderInstRows(list);
+}
+function searchInstallations(q){instSearchQ=q;applyInstFilters();}
+
+function renderInstallations(){
+  const totalT=installations.filter(i=>i.payment_method==='تحويل').reduce((s,i)=>s+(Number(i.contract_value)||0),0);
+  const totalC=installations.filter(i=>i.payment_method==='كاش').reduce((s,i)=>s+(Number(i.contract_value)||0),0);
+  document.getElementById('inst-total').textContent=installations.length;
+  document.getElementById('inst-transfer').textContent=totalT.toLocaleString('en-US');
+  document.getElementById('inst-cash').textContent=totalC.toLocaleString('en-US');
+  document.getElementById('inst-inprogress').textContent=installations.filter(i=>i.phase!=='done'&&i.phase!=='pending').length;
+  renderInstRows(installations);
+}
+function renderInstRows(list){
+  document.getElementById('inst-tbody').innerHTML=list.map(i=>{
+    const p1=i.phase1_paid?'<span class="b b-green" style="font-size:9px;padding:1px 5px"><i class="ph-bold ph-check"></i></span>':'<span class="b b-gray" style="font-size:9px;padding:1px 5px"><i class="ph-bold ph-x"></i></span>';
+    const p2=i.phase2_paid?'<span class="b b-green" style="font-size:9px;padding:1px 5px"><i class="ph-bold ph-check"></i></span>':'<span class="b b-gray" style="font-size:9px;padding:1px 5px"><i class="ph-bold ph-x"></i></span>';
+    const p3=i.phase3_paid?'<span class="b b-green" style="font-size:9px;padding:1px 5px"><i class="ph-bold ph-check"></i></span>':'<span class="b b-gray" style="font-size:9px;padding:1px 5px"><i class="ph-bold ph-x"></i></span>';
+    return `<tr onclick="${isAdmin?'openInstPanel('+i.id+')':'void(0)'}">
+      <td style="color:var(--text3)">${i.id}</td>
+      <td style="font-weight:500">${i.client_name}</td>
+      <td style="color:var(--text2)">${i.area||'—'}</td>
+      <td style="direction:ltr;text-align:right">${i.phone?`<a href="tel:+966${i.phone}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${i.phone}</a>`:'—'}</td>
+      <td style="text-align:center">${i.elevators||'—'}</td>
+      <td style="color:var(--green);font-weight:500">${fmtMoney(i.contract_value)}</td>
+      <td><span class="b ${i.payment_method==='تحويل'?'b-blue':'b-green'}">${i.payment_method||'—'}</span></td>
+      <td style="color:var(--text2)">${i.maintenance_period||'—'}</td><td style="color:var(--text2)">${i.start_date||'—'}</td>
+      <td>${phaseBadge(i.phase)} <span style="margin-right:3px">${p1}${p2}${p3}</span></td>
+      <td>${i.is_done?'<span class="b b-green"><i class="ph-bold ph-check" style="margin-left:2px"></i> مسلّم</span>':'<span class="b b-amber">جاري</span>'}</td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px">لا توجد نتائج</td></tr>`;
+}
+
+function openInstPanel(id){
+  if(!isAdmin) return;
+  const i=installations.find(x=>x.id===id); if(!i) return;
+  editingInstId=id;
+  document.getElementById('inst-modal-title').textContent='تعديل: '+i.client_name;
+  document.getElementById('i-name').value=i.client_name||'';
+  document.getElementById('i-phone').value=i.phone||'';
+  document.getElementById('i-area').value=i.area||'';
+  document.getElementById('i-elev').value=i.elevators||1;
+  document.getElementById('i-value').value=i.contract_value||0;
+  document.getElementById('i-payment').value=i.payment_method||'تحويل';
+  document.getElementById('i-maintenance').value=i.maintenance_period||'سنة';
+  document.getElementById('i-start').value=i.start_date||'';
+  document.getElementById('i-phase').value=i.phase||'pending';
+  document.getElementById('i-p1').value=i.phase1_paid?'1':'0';
+  document.getElementById('i-p2').value=i.phase2_paid?'1':'0';
+  document.getElementById('i-p3').value=i.phase3_paid?'1':'0';
+  document.getElementById('i-done').value=i.is_done?'1':'0';
+  document.getElementById('i-note').value=i.notes||'';
+  document.getElementById('inst-modal').classList.add('show');
+}
+
+// ─── Reports (enhanced) ───
+function renderReports(){
+  const totalClients=raw.length;
+  const totalElevators=raw.reduce((s,c)=>s+(c.elevators||0),0);
+  const totalContractVal=raw.reduce((s,c)=>s+(Number(c.contract_value)||0),0);
+  const totalInstVal=installations.reduce((s,i)=>s+(Number(i.contract_value)||0),0);
+  const totalVal=totalContractVal+totalInstVal;
+  const needContact=raw.filter(c=>c.needs_contact).length;
+
+  // KPIs
+  document.getElementById('rpt-kpis').innerHTML=[
+    {l:'إجمالي العملاء',v:totalClients,c:'var(--text)',sub:''},
+    {l:'إجمالي المصاعد',v:totalElevators,c:'var(--accent)',sub:'مصعد مُركَّب'},
+    {l:'قيمة عقود الصيانة',v:totalContractVal.toLocaleString('en-US')+' ﷼',c:'var(--green)',sub:'',sm:true},
+    {l:'قيمة عقود التركيب',v:totalInstVal.toLocaleString('en-US')+' ﷼',c:'#f97316',sub:'',sm:true},
+    {l:'يحتاجون تواصل',v:needContact,c:'var(--red)',sub:'عميل'},
+  ].map(s=>`
+    <div class="rpt-kpi">
+      <div class="rpt-kpi-val" style="color:${s.c};font-size:${s.sm?'15px':'24px'}">${s.v}</div>
+      <div class="rpt-kpi-lbl">${s.l}</div>
+      ${s.sub?`<div class="rpt-kpi-sub">${s.sub}</div>`:''}
+    </div>`).join('');
+
+  // rpt1 - contract distribution
+  const byC={};
+  raw.forEach(c=>{const k=c.contract||'بدون';byC[k]=(byC[k]||0)+1;});
+  document.getElementById('rpt1').innerHTML=Object.entries(byC).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div style="margin-bottom:13px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span>${k}</span><span style="font-weight:600">${v} <span style="color:var(--text3);font-weight:400">(${Math.round(v/raw.length*100)}%)</span></span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${Math.round(v/raw.length*100)}%"></div></div>
+    </div>`).join('');
+
+  // rpt2 - top areas by client count
+  const byA={};raw.forEach(c=>{if(c.area)byA[c.area]=(byA[c.area]||0)+1;});
+  const maxA=Math.max(...Object.values(byA),1);
+  document.getElementById('rpt2').innerHTML=Object.entries(byA).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([a,n])=>`
+    <div class="rpt-row">
+      <span>${a}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:80px;background:var(--bg4);border-radius:3px;height:4px;overflow:hidden">
+          <div style="width:${Math.round(n/maxA*100)}%;height:100%;background:var(--accent);border-radius:3px"></div>
+        </div>
+        <span style="font-weight:600;color:var(--accent);min-width:20px;text-align:left">${n}</span>
+      </div>
+    </div>`).join('');
+
+  // rpt3 - visit distribution
+  const byV={'شهرية':0,'كل شهرين':0,'غير محدد':0};
+  raw.forEach(c=>{if(c.visit==='شهرية')byV['شهرية']++;else if(c.visit==='كل شهرين')byV['كل شهرين']++;else byV['غير محدد']++;});
+  // urgent breakdown
+  const urgentSoon=raw.filter(c=>c.visit_day&&c.remaining<=7).length;
+  const urgentMonth=raw.filter(c=>c.visit_day&&c.remaining>7&&c.remaining<=30).length;
+  const urgentLater=raw.filter(c=>c.visit_day&&c.remaining>30).length;
+  document.getElementById('rpt3').innerHTML=`
+    ${Object.entries(byV).map(([k,v])=>`
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>${k}</span><span style="font-weight:600">${v}</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${Math.round(v/raw.length*100)}%;background:${k==='شهرية'?'var(--green)':k==='كل شهرين'?'var(--amber)':'var(--text3)'}"></div></div>
+    </div>`).join('')}
+    <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px">حالة الزيارات القادمة</div>
+      ${[{l:'<i class="ph-duotone ph-lightning" style="margin-left:4px"></i> هذا الأسبوع',v:urgentSoon,c:'var(--red)'},{l:'<i class="ph-duotone ph-calendar" style="margin-left:4px"></i> هذا الشهر',v:urgentMonth,c:'var(--amber)'},{l:'<i class="ph-duotone ph-check-circle" style="margin-left:4px"></i> لاحقاً',v:urgentLater,c:'var(--green)'}].map(s=>`
+      <div class="rpt-row"><span style="color:${s.c}">${s.l}</span><span style="font-weight:600;color:${s.c}">${s.v}</span></div>`).join('')}
+    </div>`;
+
+  // rpt5 - contract value by area
+  const byAV={};
+  raw.forEach(c=>{if(c.area&&c.contract_value)byAV[c.area]=(byAV[c.area]||0)+Number(c.contract_value);});
+  const maxV=Math.max(...Object.values(byAV),1);
+  const topAreas=Object.entries(byAV).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  document.getElementById('rpt5').innerHTML=topAreas.length?topAreas.map(([a,v])=>`
+    <div class="rpt-row">
+      <span>${a}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:80px;background:var(--bg4);border-radius:3px;height:4px;overflow:hidden">
+          <div style="width:${Math.round(v/maxV*100)}%;height:100%;background:var(--green);border-radius:3px"></div>
+        </div>
+        <span style="font-weight:600;color:var(--green);font-size:11px;min-width:60px;text-align:left">${v.toLocaleString('en-US')}</span>
+      </div>
+    </div>`).join(''):`<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">لا توجد بيانات قيم بعد</div>`;
+
+  // rpt6 - installations summary
+  const instDone=installations.filter(i=>i.is_done).length;
+  const instInProgress=installations.filter(i=>!i.is_done&&i.phase!=='pending').length;
+  const instPending=installations.filter(i=>i.phase==='pending').length;
+  const instTotalVal=installations.reduce((s,i)=>s+(Number(i.contract_value)||0),0);
+  const instTransferVal=installations.filter(i=>i.payment_method==='تحويل').reduce((s,i)=>s+(Number(i.contract_value)||0),0);
+  const instCashVal=installations.filter(i=>i.payment_method==='كاش').reduce((s,i)=>s+(Number(i.contract_value)||0),0);
+  document.getElementById('rpt6').innerHTML=installations.length?`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+      ${[{l:'مكتملة ومسلّمة',v:instDone,c:'var(--green)'},{l:'قيد التنفيذ',v:instInProgress,c:'var(--amber)'},{l:'لم تبدأ',v:instPending,c:'var(--text3)'}].map(s=>`
+      <div class="rpt-kpi"><div class="rpt-kpi-val" style="color:${s.c}">${s.v}</div><div class="rpt-kpi-lbl">${s.l}</div></div>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px">إجمالي قيمة التركيب</div>
+        <div style="font-size:16px;font-weight:600;color:#f97316">${instTotalVal.toLocaleString('en-US')} ﷼</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px">تحويل بنكي</div>
+        <div style="font-size:16px;font-weight:600;color:var(--accent)">${instTransferVal.toLocaleString('en-US')} ﷼</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px">كاش</div>
+        <div style="font-size:16px;font-weight:600;color:var(--green)">${instCashVal.toLocaleString('en-US')} ﷼</div>
+      </div>
+    </div>`:`<div style="color:var(--text3);font-size:12px;text-align:center;padding:24px">لا توجد عقود تركيب مضافة بعد</div>`;
+
+
+  // Render ApexChart
+  const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  let monthsData = {};
+  
+  // Helper to process date
+  const addData = (dStr, type) => {
+    if(!dStr) return;
+    const d = new Date(dStr);
+    if(isNaN(d)) return;
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if(!monthsData[key]) monthsData[key] = { maint: 0, inst: 0 };
+    if(type === 'maint') monthsData[key].maint++;
+    else monthsData[key].inst++;
+  };
+  
+  // Only tie strictly to start_date for clients
+  raw.forEach(c => {
+    if(['تعاقد'].includes(c.contract)) addData(c.start_date, 'maint');
+    if(['تركيب/مجاني','تركيب','مجاني','استكمال تركيب'].includes(c.contract)) addData(c.start_date, 'inst');
+  });
+  // Tie strictly to created_at for installations if start_date isn't available
+  installations.forEach(i => {
+    addData(i.created_at, 'inst');
+  });
+  
+  // Ensure we have at least last 6 months even if empty
+  const now = new Date();
+  for(let i=5; i>=0; i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if(!monthsData[k]) monthsData[k] = { maint: 0, inst: 0 };
+  }
+  const finalKeys = Object.keys(monthsData).sort();
+  
+  const labels = finalKeys.map(k => {
+    const [y,m] = k.split('-');
+    return `${monthNames[parseInt(m)-1]} ${y}`;
+  });
+  const dataMaint = finalKeys.map(k => monthsData[k].maint);
+  const dataInst = finalKeys.map(k => monthsData[k].inst);
+  
+  const commonOptions = {
+    chart: { type: 'area', height: 300, toolbar: { show: false }, fontFamily: 'inherit' },
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] } },
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 2 },
+    xaxis: { categories: labels, tooltip: { enabled: false } },
+    yaxis: { labels: { formatter: val => Math.floor(val) } },
+    theme: { mode: 'dark' },
+    grid: { borderColor: 'rgba(255,255,255,0.05)', strokeDashArray: 4 },
+    legend: { position: 'top', horizontalAlign: 'right' },
+    tooltip: { theme: 'dark' }
+  };
+
+  const chartMaintOpt = {
+    ...commonOptions,
+    series: [{ name: 'عقود صيانة دورية', data: dataMaint }],
+    colors: ['#3b82f6']
+  };
+
+  const chartInstOpt = {
+    ...commonOptions,
+    series: [{ name: 'عقود تركيب / مجاني', data: dataInst }],
+    colors: ['#f97316']
+  };
+  
+  const chartElMaint = document.getElementById('rpt-chart-maint');
+  if(chartElMaint) {
+    chartElMaint.innerHTML = '';
+    if(window.rptChartInstanceMaint) window.rptChartInstanceMaint.destroy();
+    window.rptChartInstanceMaint = new ApexCharts(chartElMaint, chartMaintOpt);
+    window.rptChartInstanceMaint.render();
+  }
+
+  const chartElInst = document.getElementById('rpt-chart-inst');
+  if(chartElInst) {
+    chartElInst.innerHTML = '';
+    if(window.rptChartInstanceInst) window.rptChartInstanceInst.destroy();
+    window.rptChartInstanceInst = new ApexCharts(chartElInst, chartInstOpt);
+    window.rptChartInstanceInst.render();
+  }
+
+  // rpt4 team
+  document.getElementById('rpt4').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      ${[{n:'م/ حامد ربيع',r:'المدير التنفيذي',i:'<i class="ph-duotone ph-buildings"></i>',c:'var(--accent)'},{n:'يوسف حامد',r:'مدير النظام',i:'<i class="ph-duotone ph-desktop"></i>',c:'var(--purple)'},{n:'م/ إسلام',r:'مسؤول العمليات',i:'<i class="ph-duotone ph-wrench"></i>',c:'var(--green)'}].map(p=>`
+      <div style="background:var(--bg3);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border)">
+        <div style="font-size:24px;margin-bottom:7px">${p.i}</div>
+        <div style="font-size:13px;font-weight:600;color:${p.c};margin-bottom:3px">${p.n}</div>
+        <div style="font-size:11px;color:var(--text3)">${p.r}</div>
+      </div>`).join('')}
+    </div>`;
+}
+
+// ─── Admin: Client CRUD ───
+function showAddModal(){
+  if(!isAdmin) return;
+  editingId=null;
+  document.getElementById('modal-title').textContent='إضافة عميل جديد';
+  ['f-name','f-phone','f-area','f-note','f-duration','f-contract-custom'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-elev').value=1;
+  document.getElementById('f-value').value='';
+  document.getElementById('f-contract').value='';
+  document.getElementById('f-visit').value='';
+  document.getElementById('f-day').value='';
+  document.getElementById('f-start').value='';
+  document.getElementById('f-end').value='';
+  document.getElementById('f-contact').checked=false;
+  document.getElementById('next-date-preview').textContent='';
+  document.getElementById('client-modal').classList.add('show');
+}
+function showEditModal(id){
+  if(!isAdmin) return;
+  const c=raw.find(x=>x.id===id);
+  editingId=id;
+  document.getElementById('modal-title').textContent='تعديل: '+c.name;
+  document.getElementById('f-name').value=c.name||'';
+  document.getElementById('f-phone').value=c.phone||'';
+  document.getElementById('f-area').value=c.area||'';
+  document.getElementById('f-elev').value=c.elevators||1;
+  document.getElementById('f-contract').value=(c.contract==='تركيب'||c.contract==='مجاني'||c.contract==='استكمال تركيب')?'تركيب/مجاني':(c.contract||'');
+  document.getElementById('f-contract-custom').value=c.contract_custom||'';
+  document.getElementById('f-duration').value=c.duration||'';
+  document.getElementById('f-value').value=c.contract_value||'';
+  document.getElementById('f-visit').value=c.visit||'';
+  document.getElementById('f-day').value=c.visit_day||'';
+  document.getElementById('f-start').value=c.start_date||'';
+  document.getElementById('f-end').value=c.end_date||'';
+  document.getElementById('f-note').value=c.note||'';
+  document.getElementById('f-contact').checked=!!c.needs_contact;
+  updateNextDatePreview();
+  document.getElementById('client-modal').classList.add('show');
+}
+async function saveClient(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){showToast('اسم العميل مطلوب','error');return;}
+  const visitDay=parseInt(document.getElementById('f-day').value)||0;
+  const visitType=document.getElementById('f-visit').value;
+  const {nextDate,remaining}=visitDay?calcNextDate(visitDay,visitType):{nextDate:'',remaining:0};
+  const data={
+    name,phone:document.getElementById('f-phone').value.trim(),
+    area:document.getElementById('f-area').value.trim(),
+    elevators:parseInt(document.getElementById('f-elev').value)||1,
+    contract:document.getElementById('f-contract').value,
+    contract_custom:document.getElementById('f-contract-custom').value.trim(),
+    duration:document.getElementById('f-duration').value.trim(),
+    contract_value:parseFloat(document.getElementById('f-value').value)||null,
+    visit:visitType,visit_day:visitDay,
+    next_date:nextDate,remaining,
+    start_date:document.getElementById('f-start').value,
+    end_date:document.getElementById('f-end').value,
+    note:document.getElementById('f-note').value.trim(),
+    needs_contact:document.getElementById('f-contact').checked,
+    updated_at:new Date().toISOString()
+  };
+  try{
+    if(editingId){
+      await sbFetch(`clients?id=eq.${editingId}`,{method:'PATCH',body:JSON.stringify(data)});
+      showToast('تم تحديث بيانات العميل <i class="ph-bold ph-check"></i>','success');
+    }else{
+      const maxId=raw.length?Math.max(...raw.map(c=>c.id)):0;
+      data.id=maxId+1;data.created_at=new Date().toISOString();
+      await sbFetch('clients',{method:'POST',body:JSON.stringify(data)});
+      showToast('تمت إضافة العميل <i class="ph-bold ph-check"></i>','success');
+    }
+    closeModal('client-modal');await loadData();
+  }catch(e){showToast('خطأ في الحفظ: '+e.message.slice(0,40),'error');}
+}
+async function deleteClient(id){
+  const c=raw.find(x=>x.id===id);
+  if(!confirm(`هل تريد حذف "${c.name}"؟`)) return;
+  try{
+    await sbFetch(`clients?id=eq.${id}`,{method:'DELETE'});
+    closePanel();showToast('تم الحذف','success');await loadData();
+  }catch(e){showToast('خطأ في الحذف','error');}
+}
+
+// ─── Admin: Installation CRUD ───
+function showInstallModal(){
+  if(!isAdmin) return;
+  editingInstId=null;
+  document.getElementById('inst-modal-title').textContent='إضافة عقد تركيب جديد';
+  ['i-name','i-phone','i-area','i-note','i-start'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('i-elev').value=1;
+  document.getElementById('i-value').value='';
+  document.getElementById('i-payment').value='تحويل';
+  document.getElementById('i-maintenance').value='سنة';
+  document.getElementById('i-phase').value='pending';
+  document.getElementById('i-p1').value='0';
+  document.getElementById('i-p2').value='0';
+  document.getElementById('i-p3').value='0';
+  document.getElementById('i-done').value='0';
+  document.getElementById('inst-modal').classList.add('show');
+}
+async function saveInstallation(){
+  const name=document.getElementById('i-name').value.trim();
+  if(!name){showToast('اسم العميل مطلوب','error');return;}
+  const data={
+    client_name:name,
+    phone:document.getElementById('i-phone').value.trim(),
+    area:document.getElementById('i-area').value.trim(),
+    elevators:parseInt(document.getElementById('i-elev').value)||1,
+    contract_value:parseFloat(document.getElementById('i-value').value)||0,
+    payment_method:document.getElementById('i-payment').value,
+    maintenance_period:document.getElementById('i-maintenance').value,
+    start_date:document.getElementById('i-start').value,
+    phase:document.getElementById('i-phase').value,
+    phase1_paid:document.getElementById('i-p1').value==='1',
+    phase2_paid:document.getElementById('i-p2').value==='1',
+    phase3_paid:document.getElementById('i-p3').value==='1',
+    is_done:document.getElementById('i-done').value==='1',
+    notes:document.getElementById('i-note').value.trim(),
+    updated_at:new Date().toISOString()
+  };
+  try{
+    if(editingInstId){
+      await sbFetch(`installations?id=eq.${editingInstId}`,{method:'PATCH',body:JSON.stringify(data)});
+      showToast('تم التحديث <i class="ph-bold ph-check"></i>','success');
+    }else{
+      const maxId=installations.length?Math.max(...installations.map(i=>i.id)):0;
+      data.id=maxId+1;data.created_at=new Date().toISOString();
+      await sbFetch('installations',{method:'POST',body:JSON.stringify(data)});
+      showToast('تمت الإضافة <i class="ph-bold ph-check"></i>','success');
+    }
+    closeModal('inst-modal');await loadData();
+  }catch(e){showToast('خطأ: '+e.message.slice(0,50),'error');}
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  if(window.innerWidth<=768) sb.classList.toggle('mobile-open');
+  else sb.classList.toggle('collapsed');
+}
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+document.getElementById('client-modal').addEventListener('click',function(e){if(e.target===this)closeModal('client-modal');});
+document.getElementById('inst-modal').addEventListener('click',function(e){if(e.target===this)closeModal('inst-modal');});
+</script>
+</body>
+</html>
