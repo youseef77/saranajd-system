@@ -87,10 +87,22 @@ body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(
 .iv{color:var(--text);font-weight:500;text-align:left;word-break:break-word}
 .note-box{background:var(--bg3);border-radius:var(--rs);padding:9px 11px;font-size:12px;color:var(--text2);margin-top:7px;line-height:1.6;border-right:2px solid var(--red)}
 .month-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:7px}
-.md{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500}
+.md{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.md:hover{transform:scale(1.12);box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .md-done{background:var(--green-bg);color:var(--green)}
 .md-cur{background:var(--blue-bg);color:var(--accent)}
 .md-pend{background:var(--bg4);color:var(--text3)}
+.md-notdone{background:var(--red-bg);color:var(--red)}
+.month-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:450;display:none;align-items:center;justify-content:center}
+.month-detail-modal.show{display:flex}
+.month-detail-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;width:340px;max-width:94vw}
+.month-detail-title{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.month-detail-status{display:flex;gap:8px;margin-bottom:12px}
+.month-detail-status button{flex:1;padding:9px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);font-family:inherit;transition:all .15s}
+.month-detail-status .mds-done{background:var(--green-bg);color:var(--green);border-color:rgba(16,185,129,.3)}
+.month-detail-status .mds-done.active{background:var(--green);color:#fff}
+.month-detail-status .mds-notdone{background:var(--red-bg);color:var(--red);border-color:rgba(239,68,68,.3)}
+.month-detail-status .mds-notdone.active{background:var(--red);color:#fff}
 .ovl{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;display:none}
 .ovl.show{display:block}
 .pg{display:none;flex:1;overflow:hidden;flex-direction:column}
@@ -149,7 +161,7 @@ body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(
 .toast.error{border-color:rgba(239,68,68,.3);color:var(--red)}
 /* Visit Groups */
 .visit-day-group{margin-bottom:20px}
-.vdg-header{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:var(--rs);margin-bottom:8px;border:1px solid var(--border)}
+.vdg-header{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:var(--rs);margin-bottom:10px;border:1px solid var(--border)}
 .vdg-day-num{font-size:28px;font-weight:600;line-height:1;min-width:36px;text-align:center}
 .vdg-day-info{flex:1}
 .vdg-day-name{font-size:13px;font-weight:600}
@@ -159,7 +171,31 @@ body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(
 .vdg-overdue .vdg-day-num{color:var(--red)}
 .vdg-soon{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)}
 .vdg-soon .vdg-day-num{color:var(--amber)}
-.vdg-table{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden}
+/* Cards scroll */
+.vg-scroll-wrap{overflow-x:auto;padding-bottom:6px}
+.vg-scroll-wrap::-webkit-scrollbar{height:4px}
+.vg-scroll-wrap::-webkit-scrollbar-track{background:var(--bg3);border-radius:4px}
+.vg-scroll-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.vg-cards-row{display:flex;gap:12px;cursor:grab;padding:2px 2px 4px;width:max-content;min-width:100%}
+.vg-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 14px;width:280px;min-width:280px;display:flex;flex-direction:column;gap:9px;transition:border-color .15s,box-shadow .15s;position:relative}
+.vg-card:hover{border-color:var(--border2);box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.vg-card-done{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.04)}
+.vg-card-urgent{border-right:3px solid var(--red)}
+.vg-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.vg-card-name{flex:1;cursor:pointer;font-size:13px}
+.vg-card-name:hover span{color:var(--accent)}
+.vg-visit-btn{border:none;border-radius:5px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.vg-done{background:var(--green-bg);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.vg-notdone{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.vg-card-mid{display:flex;flex-wrap:wrap;gap:6px}
+.vg-info-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);background:var(--bg3);padding:3px 7px;border-radius:20px}
+.vg-card-note-row{border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:4px}
+.vg-note-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:4px}
+.vg-note-val{font-size:12px;color:var(--text);min-height:20px}
+.vg-note-text{cursor:text;display:block;padding:3px 0}
+.vg-note-text:hover{color:var(--accent)}
+.vg-client-note{font-size:11px;color:var(--text2);background:rgba(245,158,11,.07);border-right:2px solid var(--amber);border-radius:4px;padding:5px 8px;display:flex;align-items:flex-start;gap:5px}
+.vg-history{display:flex;flex-wrap:wrap;gap:3px;border-top:1px solid var(--border);padding-top:7px}
 .next-date-preview{font-size:11px;color:var(--accent);margin-top:4px;min-height:16px;font-weight:500}
 @media(max-width:768px){
   .sidebar{position:fixed;right:0;top:0;height:100%;z-index:300;transform:translateX(100%);transition:transform .25s}
@@ -280,16 +316,17 @@ body.light-mode .admin-bar {
       <div class="nav-sec">
         <div class="nav-lbl hide-col">الرئيسية</div>
         <div class="nav-item active" onclick="showPage('clients',this)"><span class="nav-icon"><i class="ph-duotone ph-users"></i></span><span class="hide-col">العملاء</span></div>
-        <div class="nav-item" onclick="showPage('contracts',this)"><span class="nav-icon"><i class="ph-duotone ph-file-text"></i></span><span class="hide-col">العقود</span></div>
+      </div>
+      <div class="nav-sec">
+        <div class="nav-lbl hide-col">عمليات</div>
+        <div class="nav-item" onclick="showPage('contracts',this)"><span class="nav-icon"><i class="ph-duotone ph-file-text"></i></span><span class="hide-col">عقود الصيانة</span></div>
+        <div class="nav-item orange-nav" id="nav-inst" onclick="showPage('installations',this)"><span class="nav-icon"><i class="ph-duotone ph-crane"></i></span><span class="hide-col">عقود التركيب</span></div>
+        <div class="nav-item" id="nav-custom" onclick="showPage('custom',this)"><span class="nav-icon"><i class="ph-duotone ph-clipboard-text"></i></span><span class="hide-col">عقود مخصصة</span></div>
       </div>
       <div class="nav-sec">
         <div class="nav-lbl hide-col">المتابعة</div>
         <div class="nav-item" onclick="showPage('visits',this)"><span class="nav-icon"><i class="ph-duotone ph-calendar-blank"></i></span><span class="hide-col">الزيارات</span></div>
-        <div class="nav-item red-nav" id="nav-urgent" onclick="showPage('urgent',this)"><span class="nav-icon"><i class="ph-duotone ph-warning-circle"></i></span><span class="hide-col">تحتاج تواصل</span></div>
-      </div>
-      <div class="nav-sec">
-        <div class="nav-lbl hide-col">عمليات</div>
-        <div class="nav-item orange-nav" id="nav-inst" onclick="showPage('installations',this)"><span class="nav-icon"><i class="ph-duotone ph-crane"></i></span><span class="hide-col">عقود التركيب</span></div>
+        <div class="nav-item red-nav" id="nav-urgent" onclick="showPage('urgent',this)"><span class="nav-icon"><i class="ph-duotone ph-warning-circle"></i></span><span class="hide-col">تحتاج تواصل</span><span id="urgent-badge" class="hide-col" style="color:var(--red);font-size:11px;font-weight:600;margin-right:auto;display:none"></span></div>
       </div>
       <div class="nav-sec">
         <div class="nav-lbl hide-col">التحليل</div>
@@ -442,13 +479,26 @@ body.light-mode .admin-bar {
         <div style="background:var(--red-bg);border:1px solid rgba(239,68,68,.2);border-radius:var(--r);padding:12px 15px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
           <i class="ph-duotone ph-warning-circle" style="font-size:24px;color:var(--red)"></i>
           <div><div style="font-size:13px;font-weight:500;color:var(--red)">عملاء يحتاجون تواصل عاجل</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">م/ إسلام — مسؤول عمليات الصيانة</div></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">م/ إسلام هلال — مسؤول عمليات الصيانة</div></div>
         </div>
         <div class="card">
           <div class="card-hdr"><div class="card-title" id="urgent-lbl">—</div></div>
           <div class="tw"><table class="tbl">
             <thead><tr><th>#</th><th>العميل</th><th>المنطقة</th><th>الهاتف</th><th>ملاحظة</th></tr></thead>
             <tbody id="urgent-tbody"></tbody>
+          </table></div>
+        </div>
+
+        <div style="background:var(--amber-bg);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:12px 15px;margin:16px 0 16px;display:flex;align-items:center;gap:10px">
+          <i class="ph-duotone ph-timer" style="font-size:24px;color:var(--amber)"></i>
+          <div><div style="font-size:13px;font-weight:500;color:var(--amber)">عقود قاربت على الانتهاء أو انتهت</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">يتم إضافة العملاء تلقائياً عندما يتبقى شهرين أو أقل على انتهاء العقد</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title" id="expiry-lbl">—</div></div>
+          <div class="tw"><table class="tbl">
+            <thead><tr><th>#</th><th>العميل</th><th>المنطقة</th><th>الهاتف</th><th>نهاية العقد</th><th>الحالة</th><th>السبب</th></tr></thead>
+            <tbody id="expiry-tbody"></tbody>
           </table></div>
         </div>
       </div>
@@ -495,6 +545,39 @@ body.light-mode .admin-bar {
       </div>
     </div>
 
+    <!-- ═══ عقود مخصصة ═══ -->
+    <div class="pg" id="pg-custom">
+      <div class="content">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">
+          <div class="install-stat"><div class="install-stat-lbl">إجمالي العقود المخصصة</div><div class="install-stat-val" id="cust-total" style="color:var(--purple)">—</div></div>
+          <div class="install-stat"><div class="install-stat-lbl">إجمالي القيمة</div><div class="install-stat-val" id="cust-value" style="color:var(--green);font-size:16px">—</div><div class="install-stat-sub">ريال</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">عقود مخصصة</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+              <div class="search-wrap">
+                <input class="search-input" type="text" placeholder="بحث في العقود..." oninput="searchCustomContracts(this.value)" style="width:200px">
+                <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+              </div>
+              <select class="fsel" id="cust-goal-sel" onchange="filterCustomContracts()">
+                <option value="">كل الأهداف</option>
+                <option value="تعديل">تعديل</option>
+                <option value="نقل">نقل</option>
+                <option value="اكمال تركيب مصعد">اكمال تركيب</option>
+                <option value="أخرى">أخرى</option>
+              </select>
+              <button class="admin-btn btn-add" id="add-cust-btn" onclick="showCustomModal()" style="display:none">+ إضافة</button>
+            </div>
+          </div>
+          <div class="tw"><table class="tbl">
+            <thead><tr><th>#</th><th>العميل</th><th>المنطقة</th><th>مصاعد</th><th>قيمة العقد</th><th>تاريخ العقد</th><th>هدف العقد</th><th>ملاحظات</th></tr></thead>
+            <tbody id="cust-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ التقارير ═══ -->
     <div class="pg" id="pg-reports">
       <div class="content">
@@ -513,6 +596,7 @@ body.light-mode .admin-bar {
         <!-- Row 3 full -->
         <div class="rpt-full">
           <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-crane" style="color:#f97316;font-size:18px"></i> ملخص عقود التركيب</div></div><div style="padding:15px" id="rpt6"></div></div>
+        <div class="card" style="margin:0"><div class="card-hdr"><div class="card-title"><i class="ph-duotone ph-warning-circle" style="color:var(--red);font-size:18px"></i> عملاء يحتاجون تواصل</div></div><div style="padding:15px" id="rpt7"></div></div>
         </div>
         
         <!-- Chart Row -->
@@ -583,6 +667,34 @@ body.light-mode .admin-bar {
   </div>
 </div>
 
+<!-- Custom Contract Modal -->
+<div class="modal-ovl" id="cust-modal">
+  <div class="modal">
+    <div class="modal-title" id="cust-modal-title">إضافة عقد مخصص</div>
+    <div class="modal-grid">
+      <div class="ef"><label class="el">العميل *</label><input class="ei" id="c-name" placeholder="اسم العميل"></div>
+      <div class="ef"><label class="el">المنطقة</label><input class="ei" id="c-area"></div>
+      <div class="ef"><label class="el">عدد المصاعد</label><input class="ei" id="c-elev" type="number" min="1" value="1"></div>
+      <div class="ef"><label class="el">قيمة العقد (ريال)</label><input class="ei" id="c-value" type="number" placeholder="0"></div>
+      <div class="ef"><label class="el">تاريخ العقد</label><input class="ei" id="c-date" type="date"></div>
+      <div class="ef"><label class="el">هدف العقد</label>
+        <select class="es" id="c-goal">
+          <option value="تعديل">تعديل</option>
+          <option value="نقل">نقل</option>
+          <option value="اكمال تركيب مصعد">اكمال تركيب مصعد</option>
+          <option value="أخرى">أخرى</option>
+        </select>
+      </div>
+      <div class="ef"><label class="el">تفاصيل إضافية (إذا اخترت أخرى)</label><input class="ei" id="c-goal-custom" placeholder="اكتب هدف العقد..."></div>
+    </div>
+    <div class="ef" style="margin-top:6px"><label class="el">ملاحظات</label><textarea class="ei" id="c-note" rows="2"></textarea></div>
+    <div class="modal-footer">
+      <button class="admin-btn btn-cancel" onclick="closeModal('cust-modal')">إلغاء</button>
+      <button class="admin-btn btn-save" onclick="saveCustomContract()"><i class="ph-duotone ph-floppy-disk" style="font-size:16px"></i> حفظ</button>
+    </div>
+  </div>
+</div>
+
 <!-- Installation Modal -->
 <div class="modal-ovl" id="inst-modal">
   <div class="modal">
@@ -630,6 +742,27 @@ body.light-mode .admin-bar {
   </div>
 </div>
 
+<!-- Month Detail Modal -->
+<div class="month-detail-modal" id="month-detail-modal" onclick="if(event.target===this)closeMonthDetail()">
+  <div class="month-detail-box">
+    <div class="month-detail-title">
+      <span id="md-title">—</span>
+      <button class="close-btn" onclick="closeMonthDetail()"><i class="ph ph-x" style="font-size:14px"></i></button>
+    </div>
+    <div class="sec-lbl" style="margin-bottom:6px">حالة الزيارة</div>
+    <div class="month-detail-status">
+      <button class="mds-done" id="md-btn-done" onclick="setMonthStatus(true)">✔ تمت الزيارة</button>
+      <button class="mds-notdone" id="md-btn-notdone" onclick="setMonthStatus(false)">✗ لم تتم</button>
+    </div>
+    <div class="sec-lbl" style="margin-bottom:6px">ملاحظة الزيارة</div>
+    <textarea id="md-note" rows="3" style="width:100%;padding:8px 10px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:12px;font-family:inherit;resize:vertical;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" placeholder="اكتب ملاحظة لهذا الشهر..."></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button class="admin-btn btn-cancel" onclick="closeMonthDetail()">إلغاء</button>
+      <button class="admin-btn btn-save" onclick="saveMonthDetail()"><i class="ph-duotone ph-floppy-disk" style="font-size:16px"></i> حفظ</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -667,7 +800,7 @@ if(localStorage.getItem('theme') === 'light') {
 const USERS = {
   'hamid':   { pass:'saranajd2024', name:'م/ حامد ربيع',  role:'المدير التنفيذي', isAdmin:true },
   'youssef': { pass:'yn2024',       name:'يوسف حامد',     role:'مدير النظام',     isAdmin:true },
-  'islam':   { pass:'islam2024',    name:'م/ إسلام',       role:'مسؤول العمليات', isAdmin:true },
+  'islam':   { pass:'islam2024',    name:'م/ إسلام هلال',       role:'مسؤول العمليات', isAdmin:true },
 };
 let me = null, isAdmin = false;
 
@@ -756,6 +889,7 @@ function startApp() {
     document.getElementById('admin-bar').style.display='flex';
     document.getElementById('admin-name-bar').textContent=me.name;
     document.getElementById('add-inst-btn').style.display='';
+    document.getElementById('add-cust-btn').style.display='';
     document.getElementById('nav-urgent').style.display='flex';
     document.getElementById('nav-inst').style.display='flex';
     document.getElementById('nav-reports').style.display='flex';
@@ -798,7 +932,7 @@ function calcNextDate(visitDay,visitType){
   const day=parseInt(visitDay);
   const intervalMonths=visitType==='كل شهرين'?2:1;
   let candidate=new Date(today.getFullYear(),today.getMonth(),day);
-  if(candidate<=today) candidate=new Date(today.getFullYear(),today.getMonth()+intervalMonths,day);
+  if(candidate<today) candidate=new Date(today.getFullYear(),today.getMonth()+intervalMonths,day);
   let safety=0;
   while(candidate.getDate()!==day&&safety++<12)
     candidate=new Date(candidate.getFullYear(),candidate.getMonth()+1,day);
@@ -834,6 +968,7 @@ let raw=[],installations=[],filtered=[],pg=1,perPage=20;
 let contractF='',areaF='',clientSearchQ='';
 let contractsSearchQ='',contractsTypeF='';
 let visitsSearchQ='',visitViewMode='group',currentVisitFilter='';
+let customContracts=[],customSearchQ='',customGoalFilter='',editingCustId=null;
 let instSearchQ='';
 let editingId=null,editingInstId=null;
 
@@ -850,6 +985,8 @@ async function loadData(){
     });
     try{installations=await sbFetch('installations?select=*&order=id.asc');}
     catch(e){installations=[];}
+    try{customContracts=await sbFetch('custom_contracts?select=*&order=id.desc');}
+    catch(e){customContracts=[];}
 
     const areas=[...new Set(raw.map(c=>c.area).filter(Boolean))].sort();
     const asel=document.getElementById('area-sel');
@@ -857,6 +994,7 @@ async function loadData(){
     areas.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;asel.appendChild(o);});
 
     updateStats();
+    renderUrgent(); // update badge count
     renderClients(applyClientFilters(),1);
     showToast('تم تحميل البيانات','success');
   }catch(e){
@@ -927,19 +1065,74 @@ function renderClients(list,p){
     <button class="pgr-btn" onclick="renderClients(filtered,${Math.min(tot,pg+1)})" ${pg===tot?'disabled':''}>التالي</button>`:'';
 }
 
-// ─── Panel ───
+function getVisitHistory(c) {
+  // Migration: convert old array format to new object format
+  const h = c.visit_history;
+  if (!h) return {};
+  if (Array.isArray(h)) {
+    const obj = {};
+    h.forEach(m => { obj[m] = { done: true, note: '' }; });
+    return obj;
+  }
+  return h;
+}
+
 function openPanel(id){
   const c=raw.find(x=>x.id===id);
   const {nextDate,remaining}=c.visit_day?calcNextDate(c.visit_day,c.visit):{nextDate:c.next_date||'',remaining:c.remaining||0};
+  const currentDueMonth = nextDate ? nextDate.substring(0,7) : '';
   let dots='';
-  if(c.start_date){
-    const s=new Date(c.start_date),now=new Date(),months=c.duration?parseInt(c.duration)*12:12;
-    const total=Math.min(12,months),done=Math.max(0,Math.min(Math.round((now-s)/(30*24*3600*1000)),total));
-    dots=Array.from({length:total},(_,i)=>`<div class="md ${i<done?'md-done':i===done?'md-cur':'md-pend'}">${i+1}</div>`).join('');
+  if(isAdmin && c.visit_day){
+    const historyObj=getVisitHistory(c);
+    const now=new Date();
+    const curKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    // determine start & end month from contract dates
+    let startMonth;
+    if(c.start_date){
+      const sd=new Date(c.start_date+'T00:00:00');
+      startMonth=new Date(sd.getFullYear(),sd.getMonth(),1);
+    } else {
+      startMonth=new Date(now.getFullYear(),now.getMonth()-11,1);
+    }
+    let endMonth;
+    if(c.end_date){
+      const ed=new Date(c.end_date+'T00:00:00');
+      endMonth=new Date(ed.getFullYear(),ed.getMonth(),1);
+    } else {
+      // fallback: 12 months from start
+      endMonth=new Date(startMonth.getFullYear(),startMonth.getMonth()+12,1);
+    }
+    // DON'T go beyond end_date - respect contract period exactly
+    const months=[];
+    let cur=new Date(startMonth);
+    while(cur<=endMonth){
+      months.push({key:`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`,label:AR_MONTHS[cur.getMonth()].slice(0,3)});
+      cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);
+    }
+    dots=months.map(m=>{
+      const isCur=m.key===currentDueMonth;
+      const monthData=historyObj[m.key];
+      const isDone=monthData?monthData.done:false;
+      const isExplicitNotDone=monthData&&monthData.done===false;
+      let cls='md-pend';
+      if(isDone) cls='md-done';
+      else if(isExplicitNotDone) cls='md-notdone';
+      else if(isCur) cls='md-cur';
+      return `<div class="md ${cls}" title="${m.key}" onclick="openMonthDetail(${c.id},'${m.key}')">${m.label}</div>`;
+    }).join('');
   }
+  // Visit day label fix
+  const visitLabel = c.visit === 'شهرية' ? 'كل شهر' : c.visit === 'كل شهرين' ? 'كل شهرين' : c.visit;
+  // Get current due month's note from visit_history
+  const historyObj = getVisitHistory(c);
+  const currentMonthData = currentDueMonth ? historyObj[currentDueMonth] : null;
+  const currentVisitNote = currentMonthData ? (currentMonthData.note || '') : (c.visit_note || '');
+  const isDoneCurrentMonth = currentMonthData ? currentMonthData.done : (c.visit_done_date === currentDueMonth);
+
   document.getElementById('panel-name').textContent=c.name;
+  document.getElementById('panel-name').dataset.id=c.id;
   document.getElementById('panel-body').innerHTML=`
-    ${c.needs_contact?`<div style="background:var(--red-bg);padding:9px 16px;border-bottom:1px solid rgba(239,68,68,.2);display:flex;align-items:center;gap:8px"><i class="ph-duotone ph-warning-circle" style="font-size:16px;color:var(--red)"></i><span style="font-size:12px;color:var(--red);font-weight:500">يحتاج تواصل — م/ إسلام</span></div>`:''}
+    ${c.needs_contact?`<div style="background:var(--red-bg);padding:9px 16px;border-bottom:1px solid rgba(239,68,68,.2);display:flex;align-items:center;gap:8px"><i class="ph-duotone ph-warning-circle" style="font-size:16px;color:var(--red)"></i><span style="font-size:12px;color:var(--red);font-weight:500">يحتاج تواصل — م/ إسلام هلال</span></div>`:''}
     <div class="panel-sec"><div class="sec-lbl">بيانات العميل</div>
       <div class="ir"><span class="il">المنطقة</span><span class="iv">${c.area||'—'}</span></div>
       <div class="ir"><span class="il">الهاتف</span><span class="iv" style="direction:ltr">${isAdmin ? (c.phone?`<a href="tel:+966${c.phone}" style="color:var(--accent)">${c.phone}</a>`:'—') : hiddenTxt}</span></div>
@@ -954,15 +1147,26 @@ function openPanel(id){
       <div class="ir"><span class="il">نهاية العقد</span><span class="iv">${c.end_date||'—'}</span></div>
       ` : `<div style="text-align:center;padding:12px 0;color:var(--text3);font-size:12px;background:var(--bg3);border-radius:4px;margin-top:4px"><i class="ph ph-lock" style="font-size:16px;margin-bottom:4px;display:block"></i>هذه البيانات متاحة للإدارة فقط</div>`}
     </div>
-    ${(isAdmin && dots)?`<div class="panel-sec"><div class="sec-lbl">تقدم الزيارات</div><div class="month-grid">${dots}</div></div>`:''}
-    <div class="panel-sec"><div class="sec-lbl">الزيارة القادمة</div>
-      <div class="ir"><span class="il">يوم الزيارة</span><span class="iv" style="color:var(--accent);font-weight:600">${isAdmin ? (c.visit_day?'كل '+c.visit+' — يوم '+c.visit_day:'—') : (c.visit_day?'يوم '+c.visit_day:'—')}</span></div>
+    ${(isAdmin && dots)?`<div class="panel-sec"><div class="sec-lbl">تقدم الزيارات <span style="font-size:10px;color:var(--text3);font-weight:400;margin-right:6px">(اضغط على أي شهر للتفاصيل)</span></div><div class="month-grid">${dots}</div></div>`:''}
+    <div class="panel-sec"><div class="sec-lbl">الزيارة المستحقة${currentDueMonth ? ' <span style="font-size:10px;color:var(--text3);font-weight:400">('+currentDueMonth+')</span>' : ''}</div>
+      <div class="ir"><span class="il">يوم الزيارة</span><span class="iv" style="color:var(--accent);font-weight:600">${isAdmin ? (c.visit_day?visitLabel+' — يوم '+c.visit_day:'—') : (c.visit_day?'يوم '+c.visit_day:'—')}</span></div>
       <div class="ir"><span class="il">الزيارة القادمة</span><span class="iv" style="color:var(--accent)">${nextDate?formatDateAr(nextDate):'—'}</span></div>
       <div class="ir"><span class="il">المتبقي</span><span class="iv">${c.visit_day?rb(remaining):'—'}</span></div>
-      ${c.note?`<div style="margin-top:7px"><div class="sec-lbl">ملاحظة</div><div class="note-box">${c.note}</div></div>`:''}
+      <div class="ir"><span class="il">الزيارة</span><span class="iv">
+        ${isAdmin?`<button onclick="toggleVisit(${c.id},{stopPropagation:()=>{}})" style="padding:5px 14px;border-radius:5px;font-size:12px;font-weight:600;border:none;cursor:pointer;color:${isDoneCurrentMonth?'var(--green)':'var(--red)'};background:${isDoneCurrentMonth?'var(--green-bg)':'var(--red-bg)'};border:1px solid ${isDoneCurrentMonth?'rgba(16,185,129,.25)':'rgba(239,68,68,.25)'}">${isDoneCurrentMonth?'✔ تم':'✗ لم تتم'}</button>`:`<span style="color:${isDoneCurrentMonth?'var(--green)':'var(--red)'};font-weight:600">${isDoneCurrentMonth?'تم ✔':'لم تتم'}</span>`}
+      </span></div>
+      <div class="ir" style="align-items:flex-start"><span class="il" style="padding-top:6px">ملاحظة الزيارة</span>
+        <span class="iv" style="flex:1">
+          ${isAdmin?`<textarea id="panel-visit-note" rows="2" onchange="saveVisitNote(${c.id},this.value)" style="width:100%;padding:6px 8px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:12px;font-family:inherit;resize:vertical;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">${currentVisitNote}</textarea>`:`<span style="color:var(--text2)">${currentVisitNote||'—'}</span>`}
+        </span>
+      </div>
     </div>
+    ${c.note?`<div class="panel-sec"><div class="sec-lbl">ملاحظة العميل</div><div class="note-box">${c.note}</div></div>`:''}
     <div class="panel-sec">
       ${(isAdmin && c.phone)?`<button class="wa-btn" onclick="window.open('https://wa.me/966${c.phone}','_blank')"><i class="ph-fill ph-whatsapp-logo" style="font-size:16px"></i> واتساب ${c.name.split(' ')[0]}</button>`:''}
+      ${c.location_url?`<button onclick="window.open(this.dataset.url,'_blank')" data-url="${c.location_url}" style="background:rgba(234,67,53,.1);color:#ea4335;border:1px solid rgba(234,67,53,.2);border-radius:var(--rs);padding:9px;font-size:13px;cursor:pointer;width:100%;font-family:inherit;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><i class="ph-duotone ph-map-pin" style="font-size:16px"></i> موقع العميل</button>`:''}
+      ${isAdmin?`<button onclick="saveLocation(${c.id})" style="background:${c.location_url?'rgba(234,67,53,.06)':'var(--bg3)'};color:${c.location_url?'#ea4335':'var(--text2)'};border:1px solid ${c.location_url?'rgba(234,67,53,.15)':'var(--border)'};border-radius:var(--rs);padding:9px;font-size:13px;cursor:pointer;width:100%;font-family:inherit;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s"><i class="ph-duotone ph-${c.location_url?'pencil-simple':'map-pin-plus'}" style="font-size:16px"></i> ${c.location_url?'تعديل موقع العميل':'إضافة موقع للعميل'}</button>`:''}
+
       ${isAdmin?`<button class="act-btn" onclick="closePanel();showEditModal(${c.id})"><i class="ph-duotone ph-pencil-simple" style="font-size:16px"></i> تعديل بيانات العميل</button>
       <button onclick="deleteClient(${c.id})" style="background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);padding:9px;font-size:13px;cursor:pointer;width:100%;font-family:inherit;font-weight:500"><i class="ph-duotone ph-trash" style="font-size:16px"></i> حذف</button>`:''}
     </div>`;
@@ -976,7 +1180,7 @@ function closePanel(){
 
 // ─── Pages ───
 function showPage(page,el){
-  if (!isAdmin && ['urgent', 'installations', 'reports'].includes(page)) {
+  if (!isAdmin && ['urgent', 'installations', 'custom', 'reports'].includes(page)) {
     showToast('عذراً، هذه الصفحة متاحة للإدارة فقط', 'error');
     return;
   }
@@ -984,12 +1188,13 @@ function showPage(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('pg-'+page).classList.add('active');
   if(el) el.classList.add('active');
-  const titles={clients:'العملاء',contracts:'العقود',visits:'الزيارات القادمة',urgent:'تحتاج تواصل',installations:'عقود التركيب',reports:'التقارير'};
+  const titles={clients:'العملاء',contracts:'عقود الصيانة',visits:'الزيارات القادمة',urgent:'تحتاج تواصل',installations:'عقود التركيب',custom:'عقود مخصصة',reports:'التقارير'};
   document.getElementById('pg-title').textContent=titles[page];
   if(page==='contracts') renderContracts();
   if(page==='visits') renderVisits(currentVisitFilter);
   if(page==='urgent') renderUrgent();
   if(page==='installations') renderInstallations();
+  if(page==='custom') renderCustomContracts();
   if(page==='reports') renderReports();
   document.getElementById('sidebar').classList.remove('mobile-open');
 }
@@ -1022,6 +1227,234 @@ function renderContracts(){
       <td style="color:var(--text2)">${isAdmin ? c.start_date||'—' : hiddenTxt}</td><td style="color:var(--text2)">${isAdmin ? c.end_date||'—' : hiddenTxt}</td>
       <td>${c.visit_day&&c.remaining<=0?'<span class="b b-red">اليوم</span>':c.visit_day&&c.remaining<=30?'<span class="b b-amber">قريباً</span>':'<span class="b b-green">سارية</span>'}</td>
     </tr>`).join('');
+}
+
+
+async function toggleVisit(id, e){
+  if (e && e.stopPropagation) e.stopPropagation();
+  if(!isAdmin){showToast('للإدارة فقط','error');return;}
+  const c=raw.find(x=>x.id===id);
+  if(!c) return;
+  const currentMonth = c.next_date ? c.next_date.substring(0,7) : new Date().toISOString().substring(0,7);
+  const historyObj = getVisitHistory(c);
+  
+  const isDone = historyObj[currentMonth] ? historyObj[currentMonth].done : (c.visit_done_date === currentMonth);
+  const newDone = !isDone;
+  
+  const oldHistory = JSON.parse(JSON.stringify(c.visit_history || {}));
+  const oldDoneDate = c.visit_done_date;
+  
+  if (!historyObj[currentMonth]) {
+    historyObj[currentMonth] = { done: false, note: '' };
+  }
+  historyObj[currentMonth].done = newDone;
+  c.visit_history = historyObj;
+  c.visit_done_date = newDone ? currentMonth : null;
+  
+  renderVisits(currentVisitFilter);
+  // refresh panel if open
+  if(document.getElementById('panel').classList.contains('open')){
+    const pid = parseInt(document.getElementById('panel-name').dataset.id||0);
+    if(pid===id) openPanel(id);
+  }
+
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/clients?id=eq.${id}`,{
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({visit_done_date: c.visit_done_date, visit_history: historyObj})
+    });
+    if(!res.ok) throw new Error('DB Error');
+    showToast(newDone ? '✔ تمت الزيارة للشهر المستحق' : 'تم إلغاء الزيارة للشهر المستحق', 'success');
+  } catch(err){
+    c.visit_history = oldHistory;
+    c.visit_done_date = oldDoneDate;
+    renderVisits(currentVisitFilter);
+    if(document.getElementById('panel').classList.contains('open')){
+      const pid = parseInt(document.getElementById('panel-name').dataset.id||0);
+      if(pid===id) openPanel(id);
+    }
+    showToast('تعذّر الحفظ في قاعدة البيانات', 'error');
+  }
+}
+
+async function saveVisitNote(id, note){
+  if(!isAdmin) return;
+  const c=raw.find(x=>x.id===id);
+  if(!c) return;
+  const currentMonth = c.next_date ? c.next_date.substring(0,7) : new Date().toISOString().substring(0,7);
+  const historyObj = getVisitHistory(c);
+  if (!historyObj[currentMonth]) {
+    historyObj[currentMonth] = { done: false, note: '' };
+  }
+  const oldNote = c.visit_note;
+  const oldHistory = JSON.parse(JSON.stringify(c.visit_history || {}));
+  
+  c.visit_note = note;
+  historyObj[currentMonth].note = note;
+  c.visit_history = historyObj;
+  
+  if(document.getElementById('panel').classList.contains('open')){
+    const pid = parseInt(document.getElementById('panel-name').dataset.id||0);
+    if(pid===id) openPanel(id);
+  }
+  
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/clients?id=eq.${id}`,{
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({visit_note:note, visit_history:historyObj})
+    });
+    if(!res.ok) throw new Error('DB Error');
+    showToast('✔ تم حفظ ملاحظة الزيارة للشهر المستحق', 'success');
+  } catch(err){
+    c.visit_note = oldNote;
+    c.visit_history = oldHistory;
+    if(document.getElementById('panel').classList.contains('open')){
+      const pid = parseInt(document.getElementById('panel-name').dataset.id||0);
+      if(pid===id) openPanel(id);
+    }
+    showToast('تعذّر الحفظ', 'error');
+  }
+}
+
+// ─── Month Detail Modal Logic ───
+let activeMonthDetail = { clientId: null, monthKey: null, done: false };
+
+function openMonthDetail(clientId, monthKey) {
+  const c = raw.find(x => x.id === clientId);
+  if (!c) return;
+  activeMonthDetail.clientId = clientId;
+  activeMonthDetail.monthKey = monthKey;
+  
+  const historyObj = getVisitHistory(c);
+  const monthData = historyObj[monthKey] || { done: false, note: '' };
+  activeMonthDetail.done = monthData.done;
+  
+  document.getElementById('md-title').textContent = `${c.name} - ${monthKey}`;
+  document.getElementById('md-note').value = monthData.note || '';
+  
+  updateMonthDetailButtons();
+  
+  document.getElementById('month-detail-modal').classList.add('show');
+}
+
+function updateMonthDetailButtons() {
+  const doneBtn = document.getElementById('md-btn-done');
+  const notDoneBtn = document.getElementById('md-btn-notdone');
+  if (activeMonthDetail.done) {
+    doneBtn.classList.add('active');
+    notDoneBtn.classList.remove('active');
+  } else {
+    doneBtn.classList.remove('active');
+    notDoneBtn.classList.add('active');
+  }
+}
+
+function setMonthStatus(done) {
+  activeMonthDetail.done = done;
+  updateMonthDetailButtons();
+}
+
+function closeMonthDetail() {
+  document.getElementById('month-detail-modal').classList.remove('show');
+}
+
+async function saveMonthDetail() {
+  const { clientId, monthKey, done } = activeMonthDetail;
+  const c = raw.find(x => x.id === clientId);
+  if (!c) return;
+  
+  const note = document.getElementById('md-note').value.trim();
+  const historyObj = getVisitHistory(c);
+  
+  // Save old state in case of network failure
+  const oldHistory = JSON.parse(JSON.stringify(c.visit_history || {}));
+  const oldDoneDate = c.visit_done_date;
+  const oldVisitNote = c.visit_note;
+  
+  // Update local state
+  historyObj[monthKey] = { done: done, note: note };
+  c.visit_history = historyObj;
+  
+  // If editing the current due month, sync with current fields
+  const currentDueMonth = c.next_date ? c.next_date.substring(0,7) : '';
+  if (monthKey === currentDueMonth) {
+    c.visit_done_date = done ? monthKey : null;
+    c.visit_note = note;
+  }
+  
+  closeMonthDetail();
+  
+  // Refresh panel if open
+  if (document.getElementById('panel').classList.contains('open')) {
+    openPanel(clientId);
+  }
+  renderVisits(currentVisitFilter);
+  
+  try {
+    const patchData = { visit_history: historyObj };
+    if (monthKey === currentDueMonth) {
+      patchData.visit_done_date = done ? monthKey : null;
+      patchData.visit_note = note;
+    }
+    
+    const res = await fetch(`${SB_URL}/rest/v1/clients?id=eq.${clientId}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(patchData)
+    });
+    if (!res.ok) throw new Error('DB Error');
+    showToast('✔ تم حفظ تفاصيل الشهر بنجاح', 'success');
+  } catch(err) {
+    // Revert local state
+    c.visit_history = oldHistory;
+    c.visit_done_date = oldDoneDate;
+    c.visit_note = oldVisitNote;
+    if (document.getElementById('panel').classList.contains('open')) {
+      openPanel(clientId);
+    }
+    renderVisits(currentVisitFilter);
+    showToast('تعذّر حفظ تفاصيل الشهر', 'error');
+  }
+}
+
+
+// ---
+
+async function saveLocation(id){
+  if(!isAdmin) return;
+  const c=raw.find(x=>x.id===id); if(!c) return;
+  const url=prompt('أدخل رابط موقع العميل على خرائط جوجل:', c.location_url||'');
+  if(url===null) return; // cancelled
+  const oldUrl=c.location_url;
+  c.location_url=url||null;
+  openPanel(id); // refresh panel
+  try{
+    const res=await fetch(`${SB_URL}/rest/v1/clients?id=eq.${id}`,{
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({location_url:url||null})
+    });
+    if(!res.ok) throw new Error('DB Error');
+    showToast(url?'✔ تم حفظ موقع العميل':'تم إزالة موقع العميل','success');
+  }catch(err){
+    c.location_url=oldUrl;
+    openPanel(id);
+    showToast('تعذّر حفظ الموقع','error');
+  }
+}
+
+
+function isContractExpired(c){
+  if(!c.end_date) return false;
+  const today=new Date(); today.setHours(0,0,0,0);
+  return new Date(c.end_date+'T00:00:00')<today;
 }
 
 // ─── Visits ───
@@ -1059,6 +1492,8 @@ function renderVisits(f){
       <td style="color:var(--text2)">${c.next_date?formatDateAr(c.next_date):'—'}</td>
       <td>${rb(c.remaining)}</td>
       <td style="color:var(--text2)">${isAdmin ? c.visit||'—' : hiddenTxt}</td>
+      <td style="width:110px">${isAdmin ? `<button onclick="toggleVisit(${c.id}, event)" style="padding:4px 8px;border-radius:4px;font-size:11px;border:none;cursor:pointer;color:#fff;background:${c.visit_done_date==(c.next_date||"").substring(0,7)?'var(--green)':'var(--red)'}">${c.visit_done_date==(c.next_date||"").substring(0,7)?'تم ✔':'لم تتم'}</button>` : hiddenTxt}</td>
+      <td style="width:140px">${isAdmin ? `<input type="text" value="${c.visit_note||""}" placeholder="ملاحظة الزيارة..." onchange="saveVisitNote(${c.id}, this.value)" onclick="event.stopPropagation()" style="width:100%;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:11px">` : hiddenTxt}</td>
       <td style="color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis">${c.note||'—'}</td>
     </tr>`).join('');
 
@@ -1077,15 +1512,36 @@ function renderVisits(f){
     const cls=r<=0?'vdg-overdue':r<=7?'vdg-soon':'';
     const d=group.nextDate?new Date(group.nextDate+'T00:00:00'):null;
     const fullDate=d?`${AR_DAYS[d.getDay()]} ${d.getDate()} ${AR_MONTHS[d.getMonth()]} ${d.getFullYear()}`:'—';
-    const rows=group.clients.map(c=>`
-      <tr class="${c.needs_contact?'row-red':''}" onclick="openPanel(${c.id})" style="cursor:pointer">
-        <td style="color:var(--text3);font-size:11px">${c.id}</td>
-        <td style="font-weight:500">${c.name}</td>
-        <td style="color:var(--text2)">${c.area||'—'}</td>
-        <td style="direction:ltr;text-align:right">${isAdmin ? (c.phone?`<a href="tel:+966${c.phone}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${c.phone}</a>`:'—') : hiddenTxt}</td>
-        <td style="color:var(--text2)">${isAdmin ? c.visit||'—' : hiddenTxt}</td>
-        <td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis">${c.note||'—'}</td>
-      </tr>`).join('');
+    const doneCount=group.clients.filter(c=>c.visit_done_date==(c.next_date||'').substring(0,7)).length;
+    const cards=group.clients.map(c=>{
+      const isDone=c.visit_done_date==(c.next_date||'').substring(0,7);
+      const historyObj=getVisitHistory(c);
+      const doneMonths=Object.keys(historyObj).filter(m=>historyObj[m].done).sort();
+      const historyDots=doneMonths.length?doneMonths.slice(-6).map(m=>{
+        const[y,mo]=m.split('-');
+        return `<span title="${y}-${mo}" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:9px;font-weight:600">${mo}</span>`;
+      }).join(''):(c.start_date?`<span style="font-size:10px;color:var(--text3)"><i class="ph-duotone ph-calendar" style="font-size:12px;margin-left:3px"></i>بداية العقد: ${c.start_date}</span>`:'');
+      return `<div class="vg-card ${isDone?'vg-card-done':''} ${c.needs_contact?'vg-card-urgent':''}" data-id="${c.id}">
+        <div class="vg-card-top">
+          <div class="vg-card-name" onclick="openPanel(${c.id})">${c.needs_contact?'<i class="ph-duotone ph-warning-circle" style="color:var(--red);font-size:14px"></i> ':''}<span style="font-weight:600;font-size:13px">${c.name}</span>${isContractExpired(c)?'<div style="font-size:10px;color:var(--red);margin-top:2px;font-weight:500"><i class="ph-duotone ph-timer" style="font-size:11px"></i> العقد منتهي — يحتاج تجديد</div>':''}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            ${isAdmin?`<button onclick="toggleVisit(${c.id},event)" class="vg-visit-btn ${isDone?'vg-done':'vg-notdone'}">${isDone?'✔ تم':'✗ لم تتم'}</button>`:''}
+          </div>
+        </div>
+        <div class="vg-card-mid">
+          <div class="vg-info-item"><i class="ph-duotone ph-map-pin" style="color:var(--text3)"></i><span>${c.area||'—'}</span></div>
+          <div class="vg-info-item"><i class="ph-duotone ph-elevator" style="color:var(--text3)"></i><span>${c.elevators} مصعد</span></div>
+          <div class="vg-info-item"><i class="ph-duotone ph-arrows-clockwise" style="color:var(--text3)"></i><span>${c.visit||'—'}</span></div>
+          ${isAdmin&&c.phone?`<div class="vg-info-item"><i class="ph-duotone ph-phone" style="color:var(--accent)"></i><a href="tel:+966${c.phone}" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none">${c.phone}</a></div>`:''}
+        </div>
+        <div class="vg-card-note-row">
+          <div class="vg-note-label"><i class="ph-duotone ph-note-pencil" style="font-size:13px;color:var(--text3)"></i> ملاحظة الزيارة</div>
+          <div class="vg-note-val" onclick="event.stopPropagation()">${isAdmin?`<span class="vg-note-text" onclick="startEditNote(${c.id},this)">${c.visit_note||'<span style=\'color:var(--text3);font-style:italic;font-size:11px\'>اضغط للكتابة...</span>'}</span>`:`<span style="color:var(--text3);font-size:11px">${c.visit_note||'—'}</span>`}</div>
+        </div>
+        ${c.note?`<div class="vg-client-note"><i class="ph-duotone ph-info" style="font-size:12px;color:var(--amber)"></i> ${c.note}</div>`:''}
+        <div class="vg-history">${historyDots}</div>
+      </div>`;
+    }).join('');
     return `<div class="visit-day-group">
       <div class="vdg-header ${cls}">
         <div class="vdg-day-num">${group.day}</div>
@@ -1093,14 +1549,46 @@ function renderVisits(f){
           <div class="vdg-day-name">${fullDate}</div>
           <div class="vdg-day-date">${r<=0?'<i class="ph-bold ph-warning" style="margin-left:2px"></i> متأخرة':'بعد '+r+' يوم'}</div>
         </div>
-        <div class="vdg-count">${group.clients.length} عميل</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-right:auto">
+          <div class="vdg-count">${group.clients.length} عميل</div>
+          ${doneCount>0?`<div style="background:var(--green-bg);color:var(--green);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:500">✔ ${doneCount} تمت</div>`:''}
+        </div>
       </div>
-      <div class="vdg-table"><table class="tbl">
-        <thead><tr><th>#</th><th>العميل</th><th>المنطقة</th><th>الهاتف</th><th>نوع الزيارة</th><th>ملاحظة</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>
+      <div class="vg-scroll-wrap">
+        <div class="vg-cards-row" id="vg-row-${group.day}">${cards}</div>
+      </div>
     </div>`;
   }).join('');
+
+  // init swipe/drag scroll
+  document.querySelectorAll('.vg-cards-row').forEach(row=>{
+    let isDown=false,startX,scrollLeft;
+    row.addEventListener('mousedown',e=>{if(e.target.tagName==='BUTTON'||e.target.tagName==='A'||e.target.tagName==='INPUT')return;isDown=true;row.style.cursor='grabbing';startX=e.pageX-row.offsetLeft;scrollLeft=row.scrollLeft;});
+    row.addEventListener('mouseleave',()=>{isDown=false;row.style.cursor='grab';});
+    row.addEventListener('mouseup',()=>{isDown=false;row.style.cursor='grab';});
+    row.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();const x=e.pageX-row.offsetLeft;row.scrollLeft=scrollLeft-(x-startX);});
+  });
+}
+
+function startEditNote(id, el){
+  const c=raw.find(x=>x.id===id); if(!c) return;
+  const cur=c.visit_note||'';
+  const inp=document.createElement('input');
+  inp.type='text'; inp.value=cur;
+  inp.style.cssText='width:100%;padding:4px 7px;border-radius:4px;border:1px solid var(--accent);background:var(--bg2);color:var(--text);font-size:12px;font-family:inherit;outline:none';
+  el.replaceWith(inp);
+  inp.focus();
+  const save=()=>{
+    const note=inp.value.trim();
+    const span=document.createElement('span');
+    span.className='vg-note-text';
+    span.onclick=()=>startEditNote(id,span);
+    span.innerHTML=note||'<span style="color:var(--text3);font-style:italic;font-size:11px">اضغط للكتابة...</span>';
+    inp.replaceWith(span);
+    if(note!==cur) saveVisitNote(id,note);
+  };
+  inp.addEventListener('blur',save);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=cur;inp.blur();}});
 }
 
 function renderUrgent(){
@@ -1113,6 +1601,48 @@ function renderUrgent(){
       <td style="direction:ltr;text-align:right">${isAdmin ? (c.phone?`<a href="tel:+966${c.phone}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${c.phone}</a>`:'—') : hiddenTxt}</td>
       <td style="color:var(--text2);max-width:220px;overflow:hidden;text-overflow:ellipsis">${c.note||'—'}</td>
     </tr>`).join('');
+
+  // Expiring/expired contracts (within 2 months or already expired)
+  const today=new Date(); today.setHours(0,0,0,0);
+  const twoMonthsLater=new Date(today.getFullYear(),today.getMonth()+2,today.getDate());
+  const expiring=raw.filter(c=>{
+    if(!c.end_date) return false;
+    const endD=new Date(c.end_date+'T00:00:00');
+    return endD<=twoMonthsLater;
+  }).sort((a,b)=>new Date(a.end_date)-new Date(b.end_date));
+
+  document.getElementById('expiry-lbl').textContent=`${expiring.length} عقد قارب أو انتهى`;
+  document.getElementById('expiry-tbody').innerHTML=expiring.map(c=>{
+    const endD=new Date(c.end_date+'T00:00:00');
+    const diffDays=Math.ceil((endD-today)/(1000*60*60*24));
+    let status,reason,rowClass;
+    if(diffDays<0){
+      status='<span class="b b-red">منتهي</span>';
+      reason=`انتهى منذ ${Math.abs(diffDays)} يوم — يحتاج تجديد`;
+      rowClass='row-red';
+    } else if(diffDays===0){
+      status='<span class="b b-red">ينتهي اليوم</span>';
+      reason='العقد ينتهي اليوم — يحتاج تجديد عاجل';
+      rowClass='row-red';
+    } else {
+      status=`<span class="b b-amber">متبقي ${diffDays} يوم</span>`;
+      reason=`العقد ينتهي قريباً — يُنصح بالتجديد`;
+      rowClass='';
+    }
+    return `<tr class="${rowClass}" onclick="openPanel(${c.id})" style="cursor:pointer">
+      <td style="color:var(--text3)">${c.id}</td><td style="font-weight:500">${c.name}</td>
+      <td style="color:var(--text2)">${c.area||'—'}</td>
+      <td style="direction:ltr;text-align:right">${isAdmin ? (c.phone?`<a href="tel:+966${c.phone}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${c.phone}</a>`:'—') : hiddenTxt}</td>
+      <td style="color:var(--text2)">${c.end_date?formatDateShortAr(c.end_date):'—'}</td>
+      <td>${status}</td>
+      <td style="color:var(--text2);font-size:11px;max-width:200px">${reason}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:20px">لا توجد عقود قريبة من الانتهاء</td></tr>';
+
+  // Update nav badge
+  const totalUrgent=u.length+expiring.length;
+  const badge=document.getElementById('urgent-badge');
+  if(badge){badge.textContent=totalUrgent;badge.style.display=totalUrgent>0?'inline':'none';}
 }
 
 // ─── Installations ───
@@ -1178,6 +1708,86 @@ function openInstPanel(id){
   document.getElementById('inst-modal').classList.add('show');
 }
 
+
+// ─── Custom Contracts ───
+function renderCustomContracts(){
+  let list=[...customContracts];
+  if(customGoalFilter) list=list.filter(c=>c.goal===customGoalFilter||(customGoalFilter==='أخرى'&&!['تعديل','نقل','اكمال تركيب مصعد'].includes(c.goal)));
+  if(customSearchQ) list=list.filter(c=>c.client_name.includes(customSearchQ)||(c.area&&c.area.includes(customSearchQ)));
+  const totalVal=customContracts.reduce((s,c)=>s+(Number(c.contract_value)||0),0);
+  document.getElementById('cust-total').textContent=customContracts.length;
+  document.getElementById('cust-value').textContent=totalVal.toLocaleString('en-US');
+  document.getElementById('cust-tbody').innerHTML=list.map(c=>{
+    const goalBadge=c.goal==='تعديل'?'b-blue':c.goal==='نقل'?'b-amber':c.goal==='اكمال تركيب مصعد'?'b-green':'b-purple';
+    const goalText=c.goal==='أخرى'&&c.goal_custom?c.goal_custom:c.goal;
+    return `<tr onclick="${isAdmin?'openCustomPanel('+c.id+')':'void(0)'}">
+      <td style="color:var(--text3)">${c.id}</td>
+      <td style="font-weight:500">${c.client_name}</td>
+      <td style="color:var(--text2)">${c.area||'—'}</td>
+      <td style="text-align:center">${c.elevators||1}</td>
+      <td style="color:var(--green);font-weight:500">${fmtMoney(c.contract_value)}</td>
+      <td style="color:var(--text2)">${c.contract_date||'—'}</td>
+      <td><span class="b ${goalBadge}">${goalText}</span></td>
+      <td style="color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis">${c.notes||'—'}</td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px">لا توجد عقود مخصصة</td></tr>`;
+}
+function searchCustomContracts(q){customSearchQ=q;renderCustomContracts();}
+function filterCustomContracts(){customGoalFilter=document.getElementById('cust-goal-sel').value;renderCustomContracts();}
+
+function showCustomModal(){
+  editingCustId=null;
+  document.getElementById('cust-modal-title').textContent='إضافة عقد مخصص';
+  ['c-name','c-area','c-note','c-goal-custom','c-date'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('c-elev').value='1';
+  document.getElementById('c-value').value='';
+  document.getElementById('c-goal').value='تعديل';
+  document.getElementById('cust-modal').classList.add('show');
+}
+function openCustomPanel(id){
+  if(!isAdmin) return;
+  const c=customContracts.find(x=>x.id===id); if(!c) return;
+  editingCustId=id;
+  document.getElementById('cust-modal-title').textContent='تعديل: '+c.client_name;
+  document.getElementById('c-name').value=c.client_name||'';
+  document.getElementById('c-area').value=c.area||'';
+  document.getElementById('c-elev').value=c.elevators||1;
+  document.getElementById('c-value').value=c.contract_value||0;
+  document.getElementById('c-date').value=c.contract_date||'';
+  document.getElementById('c-goal').value=c.goal||'تعديل';
+  document.getElementById('c-goal-custom').value=c.goal_custom||'';
+  document.getElementById('c-note').value=c.notes||'';
+  document.getElementById('cust-modal').classList.add('show');
+}
+async function saveCustomContract(){
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){showToast('اسم العميل مطلوب','error');return;}
+  const data={
+    client_name:name,
+    area:document.getElementById('c-area').value.trim()||null,
+    elevators:parseInt(document.getElementById('c-elev').value)||1,
+    contract_value:parseFloat(document.getElementById('c-value').value)||0,
+    contract_date:document.getElementById('c-date').value||null,
+    goal:document.getElementById('c-goal').value,
+    goal_custom:document.getElementById('c-goal-custom').value.trim()||null,
+    notes:document.getElementById('c-note').value.trim()||null,
+  };
+  try{
+    if(editingCustId){
+      await sbFetch(`custom_contracts?id=eq.${editingCustId}`,{method:'PATCH',body:JSON.stringify(data)});
+      showToast('تم التحديث','success');
+    }else{
+      const maxId=customContracts.length?Math.max(...customContracts.map(c=>c.id)):0;
+      data.id=maxId+1;
+      data.created_at=new Date().toISOString();
+      await sbFetch('custom_contracts',{method:'POST',body:JSON.stringify(data)});
+      showToast('تمت الإضافة','success');
+    }
+    closeModal('cust-modal');await loadData();
+    showPage('custom',document.getElementById('nav-custom'));
+  }catch(e){showToast('خطأ: '+e.message.slice(0,80),'error');}
+}
+
 // ─── Reports (enhanced) ───
 function renderReports(){
   const totalClients=raw.length;
@@ -1193,7 +1803,7 @@ function renderReports(){
     {l:'إجمالي المصاعد',v:totalElevators,c:'var(--accent)',sub:'مصعد مُركَّب'},
     {l:'قيمة عقود الصيانة',v:totalContractVal.toLocaleString('en-US')+' ﷼',c:'var(--green)',sub:'',sm:true},
     {l:'قيمة عقود التركيب',v:totalInstVal.toLocaleString('en-US')+' ﷼',c:'#f97316',sub:'',sm:true},
-    {l:'يحتاجون تواصل',v:needContact,c:'var(--red)',sub:'عميل'},
+    {l:'عملاء يحتاجون تواصل',v:needContact,c:'var(--red)',sub:''},
   ].map(s=>`
     <div class="rpt-kpi">
       <div class="rpt-kpi-val" style="color:${s.c};font-size:${s.sm?'15px':'24px'}">${s.v}</div>
@@ -1289,6 +1899,32 @@ function renderReports(){
     </div>`:`<div style="color:var(--text3);font-size:12px;text-align:center;padding:24px">لا توجد عقود تركيب مضافة بعد</div>`;
 
 
+  // rpt7 - عملاء يحتاجون تواصل (عقود منتهية/قاربت)
+  const rptToday=new Date(); rptToday.setHours(0,0,0,0);
+  const rpt2MonthsLater=new Date(rptToday.getFullYear(),rptToday.getMonth()+2,rptToday.getDate());
+  const rptExpiring=raw.filter(c=>{
+    if(!c.end_date) return false;
+    return new Date(c.end_date+'T00:00:00')<=rpt2MonthsLater;
+  });
+  const rptExpired=rptExpiring.filter(c=>new Date(c.end_date+'T00:00:00')<rptToday).length;
+  const rptSoon=rptExpiring.length-rptExpired;
+  const rptNeedsContact=raw.filter(c=>c.needs_contact).length;
+  
+  document.getElementById('rpt7').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+      <div class="rpt-kpi"><div class="rpt-kpi-val" style="color:var(--red)">${rptNeedsContact}</div><div class="rpt-kpi-lbl">يحتاجون تواصل</div></div>
+      <div class="rpt-kpi"><div class="rpt-kpi-val" style="color:var(--red)">${rptExpired}</div><div class="rpt-kpi-lbl">عقود منتهية</div></div>
+      <div class="rpt-kpi"><div class="rpt-kpi-val" style="color:var(--amber)">${rptSoon}</div><div class="rpt-kpi-lbl">تنتهي قريباً</div></div>
+    </div>
+    ${rptExpiring.length?`<div style="border-top:1px solid var(--border);padding-top:12px">
+      ${rptExpiring.slice(0,8).map(c=>{
+        const endD=new Date(c.end_date+'T00:00:00');
+        const diff=Math.ceil((endD-rptToday)/(1000*60*60*24));
+        return '<div class="rpt-row"><span>'+c.name+'</span><span style="font-weight:500;color:'+(diff<0?'var(--red)':'var(--amber)')+'">'+
+          (diff<0?'منتهي منذ '+Math.abs(diff)+' يوم':'متبقي '+diff+' يوم')+'</span></div>';
+      }).join('')}
+    </div>`:'<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px">لا توجد عقود قريبة من الانتهاء</div>'}`;
+
   // Render ApexChart
   const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   let monthsData = {};
@@ -1304,14 +1940,13 @@ function renderReports(){
     else monthsData[key].inst++;
   };
   
-  // Only tie strictly to start_date for clients
+  // عقود الصيانة: من جدول العملاء (تعاقد فقط)
   raw.forEach(c => {
-    if(['تعاقد'].includes(c.contract)) addData(c.start_date, 'maint');
-    if(['تركيب/مجاني','تركيب','مجاني','استكمال تركيب'].includes(c.contract)) addData(c.start_date, 'inst');
+    if(c.contract==='تعاقد') addData(c.start_date, 'maint');
   });
-  // Tie strictly to created_at for installations if start_date isn't available
-  installations.forEach(i => {
-    addData(i.created_at, 'inst');
+  // عقود التركيب: من جدول العملاء (تركيب/مجاني) فقط — بدون تكرار من جدول التركيبات
+  raw.forEach(c => {
+    if(['تركيب/مجاني','تركيب','مجاني','استكمال تركيب'].includes(c.contract)) addData(c.start_date, 'inst');
   });
   
   // Ensure we have at least last 6 months even if empty
@@ -1374,7 +2009,7 @@ function renderReports(){
   // rpt4 team
   document.getElementById('rpt4').innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-      ${[{n:'م/ حامد ربيع',r:'المدير التنفيذي',i:'<i class="ph-duotone ph-buildings"></i>',c:'var(--accent)'},{n:'يوسف حامد',r:'مدير النظام',i:'<i class="ph-duotone ph-desktop"></i>',c:'var(--purple)'},{n:'م/ إسلام',r:'مسؤول العمليات',i:'<i class="ph-duotone ph-wrench"></i>',c:'var(--green)'}].map(p=>`
+      ${[{n:'م/ حامد ربيع',r:'المدير التنفيذي',i:'<i class="ph-duotone ph-buildings"></i>',c:'var(--accent)'},{n:'يوسف حامد',r:'مدير النظام',i:'<i class="ph-duotone ph-desktop"></i>',c:'var(--purple)'},{n:'م/ إسلام هلال',r:'مسؤول العمليات',i:'<i class="ph-duotone ph-wrench"></i>',c:'var(--green)'}].map(p=>`
       <div style="background:var(--bg3);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border)">
         <div style="font-size:24px;margin-bottom:7px">${p.i}</div>
         <div style="font-size:13px;font-weight:600;color:${p.c};margin-bottom:3px">${p.n}</div>
@@ -1427,19 +2062,19 @@ async function saveClient(){
   if(!name){showToast('اسم العميل مطلوب','error');return;}
   const visitDay=parseInt(document.getElementById('f-day').value)||0;
   const visitType=document.getElementById('f-visit').value;
-  const {nextDate,remaining}=visitDay?calcNextDate(visitDay,visitType):{nextDate:'',remaining:0};
   const data={
-    name,phone:document.getElementById('f-phone').value.trim(),
+    name,
+    phone:document.getElementById('f-phone').value.trim(),
     area:document.getElementById('f-area').value.trim(),
     elevators:parseInt(document.getElementById('f-elev').value)||1,
     contract:document.getElementById('f-contract').value,
     contract_custom:document.getElementById('f-contract-custom').value.trim(),
     duration:document.getElementById('f-duration').value.trim(),
     contract_value:parseFloat(document.getElementById('f-value').value)||null,
-    visit:visitType,visit_day:visitDay,
-    next_date:nextDate,remaining,
-    start_date:document.getElementById('f-start').value,
-    end_date:document.getElementById('f-end').value,
+    visit:visitType,
+    visit_day:visitDay,
+    start_date:document.getElementById('f-start').value||null,
+    end_date:document.getElementById('f-end').value||null,
     note:document.getElementById('f-note').value.trim(),
     needs_contact:document.getElementById('f-contact').checked,
     updated_at:new Date().toISOString()
@@ -1447,15 +2082,15 @@ async function saveClient(){
   try{
     if(editingId){
       await sbFetch(`clients?id=eq.${editingId}`,{method:'PATCH',body:JSON.stringify(data)});
-      showToast('تم تحديث بيانات العميل <i class="ph-bold ph-check"></i>','success');
+      showToast('تم تحديث بيانات العميل','success');
     }else{
       const maxId=raw.length?Math.max(...raw.map(c=>c.id)):0;
       data.id=maxId+1;data.created_at=new Date().toISOString();
       await sbFetch('clients',{method:'POST',body:JSON.stringify(data)});
-      showToast('تمت إضافة العميل <i class="ph-bold ph-check"></i>','success');
+      showToast('تمت إضافة العميل','success');
     }
     closeModal('client-modal');await loadData();
-  }catch(e){showToast('خطأ في الحفظ: '+e.message.slice(0,40),'error');}
+  }catch(e){showToast('خطأ في الحفظ: '+e.message.slice(0,80),'error');}
 }
 async function deleteClient(id){
   const c=raw.find(x=>x.id===id);
@@ -1488,33 +2123,33 @@ async function saveInstallation(){
   if(!name){showToast('اسم العميل مطلوب','error');return;}
   const data={
     client_name:name,
-    phone:document.getElementById('i-phone').value.trim(),
-    area:document.getElementById('i-area').value.trim(),
+    phone:document.getElementById('i-phone').value.trim()||null,
+    area:document.getElementById('i-area').value.trim()||null,
     elevators:parseInt(document.getElementById('i-elev').value)||1,
     contract_value:parseFloat(document.getElementById('i-value').value)||0,
     payment_method:document.getElementById('i-payment').value,
     maintenance_period:document.getElementById('i-maintenance').value,
-    start_date:document.getElementById('i-start').value,
+    start_date:document.getElementById('i-start').value||null,
     phase:document.getElementById('i-phase').value,
     phase1_paid:document.getElementById('i-p1').value==='1',
     phase2_paid:document.getElementById('i-p2').value==='1',
     phase3_paid:document.getElementById('i-p3').value==='1',
     is_done:document.getElementById('i-done').value==='1',
-    notes:document.getElementById('i-note').value.trim(),
-    updated_at:new Date().toISOString()
+    notes:document.getElementById('i-note').value.trim()||null,
   };
   try{
     if(editingInstId){
       await sbFetch(`installations?id=eq.${editingInstId}`,{method:'PATCH',body:JSON.stringify(data)});
-      showToast('تم التحديث <i class="ph-bold ph-check"></i>','success');
+      showToast('تم التحديث','success');
     }else{
       const maxId=installations.length?Math.max(...installations.map(i=>i.id)):0;
-      data.id=maxId+1;data.created_at=new Date().toISOString();
+      data.id=maxId+1;
+      data.created_at=new Date().toISOString();
       await sbFetch('installations',{method:'POST',body:JSON.stringify(data)});
-      showToast('تمت الإضافة <i class="ph-bold ph-check"></i>','success');
+      showToast('تمت الإضافة','success');
     }
     closeModal('inst-modal');await loadData();
-  }catch(e){showToast('خطأ: '+e.message.slice(0,50),'error');}
+  }catch(e){showToast('خطأ: '+e.message.slice(0,80),'error');}
 }
 
 function closeModal(id){document.getElementById(id).classList.remove('show');}
@@ -1530,6 +2165,7 @@ function showToast(msg,type=''){
 }
 document.getElementById('client-modal').addEventListener('click',function(e){if(e.target===this)closeModal('client-modal');});
 document.getElementById('inst-modal').addEventListener('click',function(e){if(e.target===this)closeModal('inst-modal');});
+document.getElementById('cust-modal').addEventListener('click',function(e){if(e.target===this)closeModal('cust-modal');});
 </script>
 </body>
 </html>
