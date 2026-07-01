@@ -1066,21 +1066,31 @@ function renderClients(list,p){
 }
 
 function getVisitHistory(c) {
-  // Migration: convert old array format to new object format
-  const h = c.visit_history;
+  // Migration: handle all possible formats returned from Supabase
+  let h = c.visit_history;
   if (!h) return {};
+  // If it came back as a JSON string (e.g., text column type), parse it first
+  if (typeof h === 'string') {
+    try { h = JSON.parse(h); } catch(e) { return {}; }
+  }
+  // Legacy array format: convert to object
   if (Array.isArray(h)) {
     const obj = {};
     h.forEach(m => { obj[m] = { done: true, note: '' }; });
     return obj;
   }
-  return h;
+  // Already an object
+  if (typeof h === 'object') return h;
+  return {};
 }
 
 function openPanel(id){
-  const c=raw.find(x=>x.id===id);
+  id = parseInt(id, 10); // Ensure numeric comparison (fixes string vs number type mismatch)
+  const c=raw.find(x=>parseInt(x.id,10)===id);
+  if(!c) { console.error('openPanel: client not found, id='+id); return; }
   const {nextDate,remaining}=c.visit_day?calcNextDate(c.visit_day,c.visit):{nextDate:c.next_date||'',remaining:c.remaining||0};
   const currentDueMonth = nextDate ? nextDate.substring(0,7) : '';
+
   let dots='';
   if(isAdmin && c.visit_day){
     const historyObj=getVisitHistory(c);
@@ -1233,7 +1243,8 @@ function renderContracts(){
 async function toggleVisit(id, e){
   if (e && e.stopPropagation) e.stopPropagation();
   if(!isAdmin){showToast('للإدارة فقط','error');return;}
-  const c=raw.find(x=>x.id===id);
+  id = parseInt(id, 10);
+  const c=raw.find(x=>parseInt(x.id,10)===id);
   if(!c) return;
   const currentMonth = c.next_date ? c.next_date.substring(0,7) : new Date().toISOString().substring(0,7);
   const historyObj = getVisitHistory(c);
@@ -1241,7 +1252,7 @@ async function toggleVisit(id, e){
   const isDone = historyObj[currentMonth] ? historyObj[currentMonth].done : (c.visit_done_date === currentMonth);
   const newDone = !isDone;
   
-  const oldHistory = JSON.parse(JSON.stringify(c.visit_history || {}));
+  const oldHistory = JSON.parse(JSON.stringify(getVisitHistory(c)));
   const oldDoneDate = c.visit_done_date;
   
   if (!historyObj[currentMonth]) {
@@ -1280,7 +1291,8 @@ async function toggleVisit(id, e){
 
 async function saveVisitNote(id, note){
   if(!isAdmin) return;
-  const c=raw.find(x=>x.id===id);
+  id = parseInt(id, 10);
+  const c=raw.find(x=>parseInt(x.id,10)===id);
   if(!c) return;
   const currentMonth = c.next_date ? c.next_date.substring(0,7) : new Date().toISOString().substring(0,7);
   const historyObj = getVisitHistory(c);
@@ -1288,7 +1300,7 @@ async function saveVisitNote(id, note){
     historyObj[currentMonth] = { done: false, note: '' };
   }
   const oldNote = c.visit_note;
-  const oldHistory = JSON.parse(JSON.stringify(c.visit_history || {}));
+  const oldHistory = JSON.parse(JSON.stringify(getVisitHistory(c)));
   
   c.visit_note = note;
   historyObj[currentMonth].note = note;
@@ -1322,7 +1334,8 @@ async function saveVisitNote(id, note){
 let activeMonthDetail = { clientId: null, monthKey: null, done: false };
 
 function openMonthDetail(clientId, monthKey) {
-  const c = raw.find(x => x.id === clientId);
+  clientId = parseInt(clientId, 10);
+  const c = raw.find(x => parseInt(x.id,10) === clientId);
   if (!c) return;
   activeMonthDetail.clientId = clientId;
   activeMonthDetail.monthKey = monthKey;
@@ -1362,14 +1375,14 @@ function closeMonthDetail() {
 
 async function saveMonthDetail() {
   const { clientId, monthKey, done } = activeMonthDetail;
-  const c = raw.find(x => x.id === clientId);
+  const c = raw.find(x => parseInt(x.id,10) === parseInt(clientId,10));
   if (!c) return;
   
   const note = document.getElementById('md-note').value.trim();
   const historyObj = getVisitHistory(c);
   
   // Save old state in case of network failure
-  const oldHistory = JSON.parse(JSON.stringify(c.visit_history || {}));
+  const oldHistory = JSON.parse(JSON.stringify(getVisitHistory(c)));
   const oldDoneDate = c.visit_done_date;
   const oldVisitNote = c.visit_note;
   
